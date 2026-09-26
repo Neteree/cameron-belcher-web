@@ -11,6 +11,12 @@ export const site = {
     'Fast, good-looking websites for Auckland small businesses, with no monthly fees. Pay once for the build, then only for the changes you ask for.',
   /** Shown on the page only when set. */
   email: null as string | null,
+  /**
+   * Web3Forms access key for the contact form (web3forms.com). Enquiries go
+   * to the email address the key was created with. It's safe to publish.
+   * While null, the form says it isn't connected and sends nothing.
+   */
+  formKey: null as string | null,
   currency: 'NZD',
   /** Every site starts here. */
   base: {

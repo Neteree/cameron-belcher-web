@@ -1,13 +1,16 @@
 <script lang="ts">
-  // Enquiry form. Not connected to anything yet: a live site would post to a
-  // form service (e.g. Formspree) or a serverless function instead.
+  // Enquiry form. Sends through Web3Forms, which emails the enquiry to the
+  // address behind `site.formKey`. Without a key it sends nothing.
+  import { site } from '../site.config';
+
   let name = $state('');
   let email = $state('');
   let business = $state('');
   let need = $state('');
   let message = $state('');
+  let botcheck = $state(false);
   let tried = $state(false);
-  let sent = $state(false);
+  let status = $state<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
   const errors = $derived({
     name: name.trim() ? '' : 'Tell me your name.',
@@ -16,18 +19,53 @@
   });
   const valid = $derived(Object.values(errors).every((e) => !e));
 
-  function submit(event: SubmitEvent) {
+  async function submit(event: SubmitEvent) {
     event.preventDefault();
     tried = true;
-    if (valid) sent = true;
+    if (!valid || status === 'sending') return;
+    if (!site.formKey) {
+      status = 'sent';
+      return;
+    }
+    status = 'sending';
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: site.formKey,
+          subject: `Website enquiry from ${name.trim()}`,
+          from_name: site.name,
+          name: name.trim(),
+          email,
+          business: business.trim() || '-',
+          need,
+          message: message.trim() || '-',
+          botcheck,
+        }),
+      });
+      const result = await response.json();
+      status = result.success ? 'sent' : 'failed';
+    } catch {
+      status = 'failed';
+    }
+  }
+
+  function reset() {
+    status = 'idle';
+    tried = false;
   }
 </script>
 
-{#if sent}
+{#if status === 'sent'}
   <div class="sent" role="status">
-    <p class="big">Thanks, {name.split(' ')[0]}.</p>
-    <p>This form isn't connected yet, so nothing was sent. Once it's live, enquiries will arrive straight away.</p>
-    <button class="button" type="button" onclick={() => (sent = tried = false)}>Back to the form</button>
+    <p class="big">Thanks, {name.trim().split(' ')[0]}.</p>
+    {#if site.formKey}
+      <p>Your enquiry is on its way. I'll get back to you soon.</p>
+    {:else}
+      <p>This form isn't connected yet, so nothing was sent. Once it's live, enquiries will arrive straight away.</p>
+    {/if}
+    <button class="button" type="button" onclick={reset}>Back to the form</button>
   </div>
 {:else}
   <form novalidate onsubmit={submit}>
@@ -62,8 +100,14 @@
       <label for="c-message">Anything else? <span class="optional">(optional)</span></label>
       <textarea id="c-message" rows="4" bind:value={message} placeholder="Your current website, what's not working, what you'd love it to do…"></textarea>
     </div>
-    <button class="button" type="submit">Send enquiry</button>
-    <p class="note">Not connected yet: this form doesn't send anything.</p>
+    <input class="botcheck" type="checkbox" tabindex="-1" autocomplete="off" aria-hidden="true" bind:checked={botcheck} />
+    <button class="button" type="submit" disabled={status === 'sending'}>
+      {status === 'sending' ? 'Sending…' : 'Send enquiry'}
+    </button>
+    {#if status === 'failed'}
+      <p class="error" role="alert">Sorry, that didn't send. Please try again in a moment.</p>
+    {/if}
+    {#if !site.formKey}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
   </form>
 {/if}
 
@@ -108,6 +152,13 @@
   }
   form .button {
     justify-self: start;
+  }
+  form .button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .botcheck {
+    display: none;
   }
   .note {
     margin: 0;
