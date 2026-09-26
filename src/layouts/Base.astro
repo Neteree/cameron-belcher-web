@@ -1,0 +1,264 @@
+---
+import { site } from '../site.config';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-NZ">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Figtree:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="page">
+      <header class="masthead">
+        <a class="wordmark" href="#top">
+          <span class="name">{site.name}</span>
+          <span class="role">{site.role} · {site.city}</span>
+        </a>
+        <nav aria-label="Main">
+          <a href="#work">Work</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#how">How it works</a>
+          <a href="#faq">FAQ</a>
+          <a class="nav-cta" href="#contact">Get in touch</a>
+        </nav>
+      </header>
+      <main id="main">
+        <slot />
+      </main>
+      <footer class="footer">
+        <p>© {new Date().getFullYear()} {site.name} · {site.city}, {site.country}</p>
+        <p>Built with the same setup I use for clients.</p>
+      </footer>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --paper: #f3f1ec;
+    --panel: #fbfaf7;
+    --ink: #13231b;
+    --soft: #56625a;
+    --green: #1d4a35;
+    --on-green: #f3f1ec;
+    --gold: #c9962b;
+    --rule: #d6d9cf;
+    --error: #a3261e;
+    --display: 'Alfa Slab One', 'Rockwell', 'Roboto Slab', Georgia, serif;
+    --body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --paper: #0f1a14;
+      --panel: #16241c;
+      --ink: #eef2ea;
+      --soft: #a7b3aa;
+      --green: #7fbf97;
+      --on-green: #0f1a14;
+      --gold: #e0b453;
+      --rule: #26352c;
+      --error: #ff8f86;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --paper: #0f1a14;
+    --panel: #16241c;
+    --ink: #eef2ea;
+    --soft: #a7b3aa;
+    --green: #7fbf97;
+    --on-green: #0f1a14;
+    --gold: #e0b453;
+    --rule: #26352c;
+    --error: #ff8f86;
+    color-scheme: dark;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+    padding-block: 0 2rem;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--display);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--green);
+    color: var(--on-green);
+    border: 2px solid var(--green);
+    border-radius: 0.4rem;
+    padding: 0.8rem 1.4rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .button:hover {
+    transform: translateY(-2px);
+  }
+
+  .button.ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .skip {
+    position: absolute;
+    left: -999px;
+  }
+
+  .skip:focus {
+    left: 1rem;
+    top: 1rem;
+    background: var(--panel);
+    padding: 0.5rem 1rem;
+    z-index: 10;
+  }
+
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    padding-block: 1.4rem;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .wordmark {
+    display: grid;
+    text-decoration: none;
+    line-height: 1.1;
+  }
+
+  .wordmark .name {
+    font-family: var(--display);
+    font-size: 1.5rem;
+  }
+
+  .wordmark .role {
+    font-size: 0.85rem;
+    color: var(--soft);
+  }
+
+  .masthead nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1.3rem;
+  }
+
+  .masthead nav a {
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .masthead nav a:hover {
+    color: var(--green);
+  }
+
+  .nav-cta {
+    border: 2px solid var(--ink);
+    border-radius: 0.4rem;
+    padding: 0.35rem 0.8rem;
+  }
+
+  .footer {
+    margin-top: 5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--ink);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    color: var(--soft);
+    font-size: 0.92rem;
+  }
+
+  .footer p {
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    * {
+      transition: none !important;
+    }
+  }
+</style>
