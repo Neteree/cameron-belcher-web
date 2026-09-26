@@ -31,11 +31,11 @@ export const site = {
     { name: 'Menu or product list', price: 60, detail: 'Your menu, services or products with prices.' },
     { name: 'Booking or quote form', price: 60, detail: 'Customers send a booking or quote request straight to you.' },
     { name: 'News you edit yourself', price: 80, detail: 'Post news, specials or updates from a simple editor.' },
-    { name: 'Online orders', price: 250, detail: 'Orders, pre-orders or payments through Stripe, set up in your name.' },
+    { name: 'Online orders', price: 350, detail: 'Orders, pre-orders or payments through Stripe, set up in your name.' },
   ],
   /** Pay-per-request changes after launch. */
   changes: [
-    { name: 'Small change', price: 10, detail: 'Text, photos, prices, opening hours or a menu update.' },
+    { name: 'Small change', price: 20, detail: 'Text, photos, prices, opening hours or a menu update.' },
     { name: 'Bigger job', price: null, detail: 'A redesign or something not listed above. Quoted up front.' },
   ],
 };
