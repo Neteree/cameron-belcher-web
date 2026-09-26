@@ -8,28 +8,26 @@ export const site = {
   country: 'New Zealand',
   timezone: 'Pacific/Auckland',
   description:
-    'Fast, good-looking websites for Auckland small businesses, designed, built and looked after for one monthly fee.',
+    'Fast, good-looking websites for Auckland small businesses, with no monthly fees. Pay once for the build, then only for the changes you ask for.',
   /** Shown on the page only when set. */
   email: null as string | null,
   currency: 'NZD',
   plans: [
     {
       name: 'Starter',
-      setup: 1200,
-      monthly: 59,
+      price: 1200,
       summary: 'A polished one-page site that tells people who you are and how to reach you.',
       features: [
         'One-page custom design',
         'Enquiry form',
         'Google Business Profile and local search basics',
-        'Hosting, security and updates',
-        'Small text changes on request',
+        'Launched on your own domain',
+        'Free hosting set up in your name',
       ],
     },
     {
       name: 'Business',
-      setup: 2400,
-      monthly: 99,
+      price: 2400,
       featured: true,
       summary: 'A full site for businesses that want to be found and win enquiries online.',
       features: [
@@ -37,21 +35,26 @@ export const site = {
         'Blog or news you can edit yourself',
         'Booking or quote request forms',
         'Everything in Starter',
-        'Monthly report on visits and enquiries',
+        'Visitor stats you can check any time',
       ],
     },
     {
       name: 'Online orders',
-      setup: 3800,
-      monthly: 149,
+      price: 3800,
       summary: 'Take orders, pre-orders or payments online without a clunky shop platform.',
       features: [
         'Menu, product list or pre-order cart',
         'Secure checkout through Stripe',
         'Delivery and pickup options',
         'Everything in Business',
-        'Priority changes',
+        'Stripe account set up in your name',
       ],
     },
+  ],
+  /** Pay-per-request changes after launch. */
+  changes: [
+    { name: 'Small change', price: 40, detail: 'Text, photos, prices, opening hours or a menu update.' },
+    { name: 'New page', price: 180, detail: 'A new page designed to match the rest of your site.' },
+    { name: 'Bigger job', price: null, detail: 'New features, bookings, online orders or a redesign. Quoted up front.' },
   ],
 };

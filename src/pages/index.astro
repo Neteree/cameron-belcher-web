@@ -20,8 +20,8 @@ const benefits = [
     text: 'Send me a quick message for changes, or update your own menu, prices and news in a simple editor.',
   },
   {
-    title: 'Looked after',
-    text: 'Hosting, security, backups and updates are all included. You never have to think about it.',
+    title: 'No monthly fees',
+    text: 'Pay once for your site. After that you only pay when you ask for a change.',
   },
 ];
 
@@ -30,7 +30,7 @@ const steps = [
   { title: 'A quick chat', text: 'A free 20-minute call about your business and what you want the site to do.' },
   { title: 'Design and build', text: 'I design and build your site, and you see a working preview to give feedback on.' },
   { title: 'Launch', text: 'Once you’re happy, it goes live on your domain, with your Google profile connected.' },
-  { title: 'Looked after', text: 'Each month I keep it secure and up to date, and make the small changes you ask for.' },
+  { title: 'Changes when you need them', text: 'Send me a request whenever something changes. I tell you the price, then do it.' },
 ];
 
 const faqs = [
@@ -44,11 +44,15 @@ const faqs = [
   },
   {
     q: 'Why not Wix, Squarespace or WordPress?',
-    a: 'They’re fine for some people, but they take your time to set up and maintain, and often end up slow. My sites are custom, fast, and looked after for you.',
+    a: 'They’re fine for some people, but they take your time to set up and maintain, and often end up slow. My sites are custom and fast, and I make the changes for you when you need them.',
   },
   {
-    q: 'What does the monthly fee cover?',
-    a: 'Hosting, security, backups, software updates, small content changes, and a short monthly report on how your site is doing.',
+    q: 'Are there any ongoing costs?',
+    a: 'Only your domain name, usually around $30 a year, paid straight to the registrar. Hosting is free and set up in your name, and there’s no monthly fee to me.',
+  },
+  {
+    q: 'How do changes work?',
+    a: 'Send me what you’d like changed. Small changes are a fixed price; anything bigger gets a quote before I start, so there are no surprises.',
   },
 ];
 ---
@@ -59,8 +63,8 @@ const faqs = [
       <p class="eyebrow">{site.role} · {site.city}</p>
       <h1>Websites that bring <span class="gold">local customers</span> through the door.</h1>
       <p class="lede">
-        I design, build and look after fast, good-looking websites for small businesses around {site.city}.
-        One monthly fee covers hosting, updates and changes, so you never have to think about it.
+        I design and build fast, good-looking websites for small businesses around {site.city}.
+        No monthly fees: pay once for the build, then only for the changes you ask for.
       </p>
       <div class="actions">
         <a class="button" href="#contact">Get in touch</a>
@@ -70,7 +74,7 @@ const faqs = [
     <div class="hero-art" aria-hidden="true">
       <figure class="browser back"><span class="dots"></span><img src={projects[3].image} alt="" width="1280" height="800" /></figure>
       <figure class="browser front"><span class="dots"></span><img src={projects[0].image} alt="" width="1280" height="800" /></figure>
-      <p class="sign">Built &amp; looked after<br />in {site.city}</p>
+      <p class="sign">Designed &amp; built<br />in {site.city}</p>
     </div>
   </section>
 
@@ -113,8 +117,8 @@ const faqs = [
   <section class="section" id="pricing">
     <div class="section-head">
       <p class="eyebrow">Pricing</p>
-      <h2>Simple, all-in pricing</h2>
-      <p class="intro">A one-off setup fee to design and build your site, then a monthly fee that covers everything after that. Prices in {site.currency}.</p>
+      <h2>Pay once. No monthly fees.</h2>
+      <p class="intro">A one-off price to design, build and launch your site. After that, you only pay for the changes you ask for. Prices in {site.currency}.</p>
     </div>
     <ul class="plans">
       {site.plans.map((plan) => (
@@ -123,9 +127,8 @@ const faqs = [
           <h3>{plan.name}</h3>
           <p class="summary">{plan.summary}</p>
           <p class="price">
-            <span class="amount">{money(plan.monthly)}</span><span class="per">/month</span>
+            <span class="amount">{money(plan.price)}</span><span class="per">one-off</span>
           </p>
-          <p class="setup">plus {money(plan.setup)} setup</p>
           <ul class="features">
             {plan.features.map((f) => <li>{f}</li>)}
           </ul>
@@ -133,6 +136,18 @@ const faqs = [
         </li>
       ))}
     </ul>
+    <div class="changes">
+      <h3>After launch: pay per request</h3>
+      <ul>
+        {site.changes.map((c) => (
+          <li>
+            <p class="change-name">{c.name}</p>
+            <p class="change-detail">{c.detail}</p>
+            <p class="change-price">{c.price === null ? 'Quoted' : money(c.price)}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
   </section>
 
   <section class="section" id="how">
@@ -446,10 +461,52 @@ const faqs = [
     font-weight: 600;
   }
 
-  .setup {
+  .changes {
+    margin-top: 2.5rem;
+    border: 2px solid var(--ink);
+    border-radius: 0.6rem;
+    background: var(--panel);
+    padding: 1.5rem 1.75rem;
+  }
+
+  .changes h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .changes ul {
+    list-style: none;
     margin: 0;
+    padding: 0;
+  }
+
+  .changes li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.1rem 1rem;
+    padding: 0.8rem 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .changes li p {
+    margin: 0;
+  }
+
+  .change-name {
+    font-weight: 700;
+  }
+
+  .change-detail {
+    grid-column: 1;
     color: var(--soft);
-    font-size: 0.95rem;
+  }
+
+  .change-price {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-family: var(--display);
+    font-size: 1.5rem;
   }
 
   .features {
