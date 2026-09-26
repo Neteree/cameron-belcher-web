@@ -10,6 +10,7 @@
 //    scrolling, no broken images or files, no script errors, and every link
 //    on the site points at a page and section that exist.
 // 4. Forms: sending an empty form shows errors instead of sending.
+// 5. No [PLACEHOLDER: ...] text is left on any page.
 //
 // Full-page screenshots go in check-output/. Exits with 1 if anything fails.
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -89,6 +90,7 @@ for (const page of pages) {
       text: `${document.title}\n${document.querySelector('meta[name=description]')?.content ?? ''}\n${document.body.innerText}`,
       links: [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href')),
     }));
+    if (device === 'phone' && report.text.includes('[PLACEHOLDER')) fail(area, 'still has [PLACEHOLDER: ...] text');
     if (report.overflow > 0) fail(area, `scrolls sideways by ${report.overflow}px`);
     for (const src of report.brokenImages) fail(area, `image didn't load: ${src}`);
     for (const error of errors) fail(area, `error: ${error}`);
