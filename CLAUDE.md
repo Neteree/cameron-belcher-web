@@ -8,3 +8,4 @@ Cameron's own business site: websites for local Auckland businesses. Astro 7 wit
 - **Contact form:** `ContactForm.svelte` posts to Web3Forms using `formKey` in `src/site.config.ts` (a public access key, tied to the inbox it emails). While `formKey` is null, the form sends nothing and says so. `email` stays null: form only, no public address.
 - **Hosting:** Cloudflare Pages, build command `npm run build`, output folder `dist`. Node version is pinned in `.node-version`.
 - **Build:** `npm run build` (runs `scripts/relative-paths.js` afterwards so the build works from any folder). Check phone width (390px) for sideways scrolling.
+- **Parked (Cameron to set up later):** Web3Forms key (`formKey`), Cloudflare Pages account and deploy, custom domain. See the Parked list in `new-empty-repo`'s CLAUDE.md.
