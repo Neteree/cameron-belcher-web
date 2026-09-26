@@ -15,7 +15,7 @@ export const site = {
   plans: [
     {
       name: 'Starter',
-      price: 450,
+      price: 150,
       summary: 'A polished one-page site that tells people who you are and how to reach you.',
       features: [
         'One-page custom design',
@@ -27,7 +27,7 @@ export const site = {
     },
     {
       name: 'Business',
-      price: 950,
+      price: 350,
       featured: true,
       summary: 'A full site for businesses that want to be found and win enquiries online.',
       features: [
@@ -40,7 +40,7 @@ export const site = {
     },
     {
       name: 'Online orders',
-      price: 1600,
+      price: 600,
       summary: 'Take orders, pre-orders or payments online without a clunky shop platform.',
       features: [
         'Menu, product list or pre-order cart',
@@ -53,8 +53,8 @@ export const site = {
   ],
   /** Pay-per-request changes after launch. */
   changes: [
-    { name: 'Small change', price: 25, detail: 'Text, photos, prices, opening hours or a menu update.' },
-    { name: 'New page', price: 90, detail: 'A new page designed to match the rest of your site.' },
+    { name: 'Small change', price: 10, detail: 'Text, photos, prices, opening hours or a menu update.' },
+    { name: 'New page', price: 40, detail: 'A new page designed to match the rest of your site.' },
     { name: 'Bigger job', price: null, detail: 'New features, bookings, online orders or a redesign. Quoted up front.' },
   ],
 };
