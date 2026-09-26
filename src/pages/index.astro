@@ -123,7 +123,7 @@ const faqs = [
     <ul class="plans">
       {site.plans.map((plan) => (
         <li class:list={['plan', { featured: plan.featured }]}>
-          {plan.featured && <p class="badge">Most popular</p>}
+          {plan.featured && <p class="badge">Best value</p>}
           <h3>{plan.name}</h3>
           <p class="summary">{plan.summary}</p>
           <p class="price">
