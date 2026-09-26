@@ -17,7 +17,7 @@ const benefits = [
   },
   {
     title: 'Easy to update',
-    text: 'Send me a quick message for changes, or update your own menu, prices and news in a simple editor.',
+    text: 'Send me a quick message for changes, or add a simple editor and post your own news.',
   },
   {
     title: 'No monthly fees',
@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: 'Can I change things myself?',
-    a: 'Yes, if you want to. Menus, prices, opening hours and news can be edited in a simple editor. Or just send me a message and I’ll do it.',
+    a: 'Yes, if you add the news editor, you can post news and specials yourself. For anything else, just send me a message and I’ll do it.',
   },
   {
     q: 'Why not Wix, Squarespace or WordPress?',
@@ -117,34 +117,45 @@ const faqs = [
   <section class="section" id="pricing">
     <div class="section-head">
       <p class="eyebrow">Pricing</p>
-      <h2>Pay once. No monthly fees.</h2>
-      <p class="intro">A one-off price to design, build and launch your site. After that, you only pay for the changes you ask for. Prices in {site.currency}.</p>
-      <p class="intro">Money tight right now? Get in touch anyway. We can split the cost into smaller payments or start with less and add to it later.</p>
+      <h2>Start small. Add as you grow.</h2>
+      <p class="intro">One simple site to start, with extras you can add now or later. After launch, you only pay for the changes you ask for. Prices in {site.currency}.</p>
+      <p class="intro">Money tight right now? Get in touch anyway. We can split the cost into smaller payments or start with the basics and add to it later.</p>
     </div>
-    <ul class="plans">
-      {site.plans.map((plan) => (
-        <li class:list={['plan', { featured: plan.featured }]}>
-          {plan.featured && <p class="badge">Best value</p>}
-          <h3>{plan.name}</h3>
-          <p class="summary">{plan.summary}</p>
-          <p class="price">
-            <span class="amount">{money(plan.price)}</span><span class="per">one-off</span>
-          </p>
-          <ul class="features">
-            {plan.features.map((f) => <li>{f}</li>)}
-          </ul>
-          <a class:list={['button', { ghost: !plan.featured }]} href="#contact">Choose {plan.name}</a>
-        </li>
-      ))}
-    </ul>
-    <div class="changes">
+    <div class="pricing-grid">
+      <div class="plan featured">
+        <p class="badge">Start here</p>
+        <h3>{site.base.name}</h3>
+        <p class="summary">{site.base.summary}</p>
+        <p class="price">
+          <span class="amount">{money(site.base.price)}</span><span class="per">one-off</span>
+        </p>
+        <ul class="features">
+          {site.base.features.map((f) => <li>{f}</li>)}
+        </ul>
+        <a class="button" href="#contact">Get started</a>
+      </div>
+      <div class="price-list">
+        <h3>Add what you need</h3>
+        <p class="note">Now or later, one-off prices.</p>
+        <ul>
+          {site.addons.map((a) => (
+            <li>
+              <p class="item-name">{a.name}</p>
+              <p class="item-detail">{a.detail}</p>
+              <p class="item-price">{money(a.price)}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+    <div class="price-list">
       <h3>After launch: pay per request</h3>
       <ul>
         {site.changes.map((c) => (
           <li>
-            <p class="change-name">{c.name}</p>
-            <p class="change-detail">{c.detail}</p>
-            <p class="change-price">{c.price === null ? 'Quoted' : money(c.price)}</p>
+            <p class="item-name">{c.name}</p>
+            <p class="item-detail">{c.detail}</p>
+            <p class="item-price">{c.price === null ? 'Quoted' : money(c.price)}</p>
           </li>
         ))}
       </ul>
@@ -397,12 +408,9 @@ const faqs = [
     color: var(--soft);
   }
 
-  .plans {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
     gap: 1.5rem;
     align-items: start;
   }
@@ -462,26 +470,35 @@ const faqs = [
     font-weight: 600;
   }
 
-  .changes {
-    margin-top: 2.5rem;
+  .price-list {
+    margin-top: 1.5rem;
     border: 2px solid var(--ink);
     border-radius: 0.6rem;
     background: var(--panel);
     padding: 1.5rem 1.75rem;
   }
 
-  .changes h3 {
+  .pricing-grid .price-list {
+    margin-top: 0;
+  }
+
+  .note {
+    margin: -0.5rem 0 0.75rem;
+    color: var(--soft);
+  }
+
+  .price-list h3 {
     font-size: 1.4rem;
     margin-bottom: 0.75rem;
   }
 
-  .changes ul {
+  .price-list ul {
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  .changes li {
+  .price-list li {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 0.1rem 1rem;
@@ -489,20 +506,20 @@ const faqs = [
     border-top: 1px solid var(--rule);
   }
 
-  .changes li p {
+  .price-list li p {
     margin: 0;
   }
 
-  .change-name {
+  .item-name {
     font-weight: 700;
   }
 
-  .change-detail {
+  .item-detail {
     grid-column: 1;
     color: var(--soft);
   }
 
-  .change-price {
+  .item-price {
     grid-column: 2;
     grid-row: 1 / span 2;
     align-self: center;
