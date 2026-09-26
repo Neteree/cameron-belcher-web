@@ -9,6 +9,11 @@ export const site = {
   timezone: 'Pacific/Auckland',
   description:
     'Fast, good-looking websites for Auckland small businesses, with no monthly fees. Pay once for the build, then only for the changes you ask for.',
+  /**
+   * The live address, e.g. 'https://example.co.nz' (no trailing slash). Link
+   * previews on Facebook and in messages need it to show the share image.
+   */
+  url: null as string | null,
   /** Shown on the page only when set. */
   email: null as string | null,
   /**

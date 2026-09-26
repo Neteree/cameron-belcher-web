@@ -100,7 +100,7 @@
       <label for="c-message">Anything else? <span class="optional">(optional)</span></label>
       <textarea id="c-message" rows="4" bind:value={message} placeholder="Your current website, what's not working, what you'd love it to do…"></textarea>
     </div>
-    <input class="botcheck" type="checkbox" tabindex="-1" autocomplete="off" aria-hidden="true" bind:checked={botcheck} />
+    <input class="botcheck" type="checkbox" tabindex="-1" aria-hidden="true" bind:checked={botcheck} />
     <button class="button" type="submit" disabled={status === 'sending'}>
       {status === 'sending' ? 'Sending…' : 'Send enquiry'}
     </button>
