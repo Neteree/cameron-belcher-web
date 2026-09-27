@@ -21,7 +21,7 @@ export const site = {
    * to the email address the key was created with. It's safe to publish.
    * While null, the form says it isn't connected and sends nothing.
    */
-  formKey: null as string | null,
+  formKey: 'f508dcc9-6877-487b-b5fd-63604d81d547' as string | null,
   currency: 'NZD',
   /** Every site starts here. */
   base: {
