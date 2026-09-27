@@ -10,6 +10,7 @@
   import { themes, modules as knownModules } from '../data/themes';
   import { send, canUpload } from '../lib/send';
   import PhotoPicker from './PhotoPicker.svelte';
+  import HoursPicker from './HoursPicker.svelte';
 
   let name = $state('');
   let suburb = $state('');
@@ -18,7 +19,7 @@
   let headline = $state('');
   let standout = $state('');
   let visit = $state('');
-  let hours = $state([{ days: '', times: '' }]);
+  let hours = $state<{ days: string; times: string }[]>([]);
   let enquiryTypes = $state('');
   let theme = $state('');
   let email = $state('');
@@ -57,14 +58,13 @@
     preOrder = modules.includes('food') && new URLSearchParams(location.search).get('preorder') === '1';
   });
 
-  const filledHours = $derived(hours.filter((row) => row.days.trim() && row.times.trim()));
   const errors = $derived({
     name: name.trim() ? '' : 'Enter your business name.',
     suburb: suburb.trim() ? '' : 'Enter your suburb or area.',
     city: city.trim() ? '' : 'Enter your town or city.',
     about: about.trim().length >= 20 ? '' : 'Tell customers a little about what you do (a sentence or two).',
     visit: visit.trim() ? '' : 'Tell customers where to find you, or the area you cover.',
-    hours: filledHours.length ? '' : 'Add at least one line of hours, e.g. "Monday to Friday" and "9am – 5pm".',
+    hours: hours.length ? '' : 'Tick the days you’re open and choose times that close after they open.',
     theme: theme ? '' : 'Choose a look.',
     photos: photoProblem(),
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'Enter an email address like you@example.com.',
@@ -104,7 +104,7 @@
       headline: headline.trim(),
       standout: standout.trim(),
       visit: visit.trim(),
-      hours: filledHours.map((row) => ({ days: row.days.trim(), times: row.times.trim() })),
+      hours,
       enquiryTypes: enquiryTypes.split('\n').map((line) => line.trim()).filter(Boolean),
       theme,
       modules,
@@ -225,16 +225,7 @@
       </div>
       <div class="field">
         <span class="label" id="o-hours-label">Opening hours</span>
-        {#each hours as row, i (i)}
-          <div class="hours-row">
-            <input aria-label="Days, line {i + 1}" placeholder="Monday to Friday" bind:value={row.days} />
-            <input aria-label="Times, line {i + 1}" placeholder="9am – 5pm" bind:value={row.times} />
-            {#if hours.length > 1}
-              <button class="remove" type="button" aria-label="Remove line {i + 1}" onclick={() => hours.splice(i, 1)}>×</button>
-            {/if}
-          </div>
-        {/each}
-        <button class="add-line" type="button" onclick={() => hours.push({ days: '', times: '' })}>Add another line</button>
+        <HoursPicker id="o-hours" bind:hours invalid={tried[2]} />
         {#if tried[2] && errors.hours}<p class="error">{errors.hours}</p>{/if}
       </div>
       <div class="field">
@@ -373,28 +364,6 @@
     color: var(--error);
     font-size: 0.92rem;
     font-weight: 600;
-  }
-  .hours-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 0.5rem;
-  }
-  .remove,
-  .add-line {
-    border: 2px solid var(--ink);
-    border-radius: 0.4rem;
-    background: none;
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .remove {
-    width: 2.6rem;
-    font-size: 1.3rem;
-    line-height: 1;
-  }
-  .add-line {
-    justify-self: start;
-    padding: 0.4rem 0.8rem;
   }
   .themes {
     display: grid;

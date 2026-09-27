@@ -7,6 +7,7 @@
   import { send, canUpload } from '../lib/send';
   import { themes } from '../data/themes';
   import PhotoPicker, { type ExistingPhoto } from './PhotoPicker.svelte';
+  import HoursPicker from './HoursPicker.svelte';
 
   type Kind = 'text' | 'hours' | 'news' | 'photos' | 'theme' | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out' | 'other';
   const kinds: { id: Kind; label: string }[] = [
@@ -30,7 +31,7 @@
     kind: 'text' as Kind,
     current: '',
     replacement: '',
-    hours: [{ days: '', times: '' }],
+    hours: [] as { days: string; times: string }[],
     title: '',
     excerpt: '',
     body: '',
@@ -88,7 +89,7 @@
       case 'text':
         return c.current.trim() && c.replacement.trim() ? '' : 'Fill in the current and new wording.';
       case 'hours':
-        return c.hours.some((row) => row.days.trim() && row.times.trim()) ? '' : 'Add at least one line of hours.';
+        return c.hours.length ? '' : 'Tick the days you’re open and choose times that close after they open.';
       case 'news':
         return c.title.trim() && c.excerpt.trim() && c.body.trim() ? '' : 'Fill in the title, summary and text.';
       case 'menu-add':
@@ -134,7 +135,7 @@
         case 'text':
           return { type: 'text', current: c.current.trim(), new: c.replacement.trim() };
         case 'hours':
-          return { type: 'hours', hours: c.hours.filter((row) => row.days.trim() && row.times.trim()) };
+          return { type: 'hours', hours: c.hours };
         case 'news':
           return { type: 'news', title: c.title.trim(), excerpt: c.excerpt.trim(), body: c.body.trim() };
         case 'menu-add': {
@@ -245,14 +246,8 @@
           </div>
         {:else if change.kind === 'hours'}
           <div class="field">
-            <span class="label">Your new opening hours (all of them)</span>
-            {#each change.hours as row, j (j)}
-              <div class="hours-row">
-                <input aria-label="Days, line {j + 1}" placeholder="Monday to Friday" bind:value={row.days} />
-                <input aria-label="Times, line {j + 1}" placeholder="9am – 5pm" bind:value={row.times} />
-              </div>
-            {/each}
-            <button class="small" type="button" onclick={() => change.hours.push({ days: '', times: '' })}>Add another line</button>
+            <span class="label" id="r-hours-{i}-label">Your opening hours (tick every day you’re open)</span>
+            <HoursPicker id="r-hours-{i}" bind:hours={change.hours} />
           </div>
         {:else if change.kind === 'news'}
           <div class="field">
@@ -397,11 +392,6 @@
     font-family: var(--display);
     font-size: 1.2rem;
     padding-inline: 0.4rem;
-  }
-  .hours-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
   }
   .checks {
     display: flex;
