@@ -4,12 +4,16 @@ import { site } from '../site.config';
 interface Props {
   title: string;
   description: string;
-  /** Prefix for links back to the home page: '' on the home page, '/' on the 404 page (served at any path). */
+  /** Prefix for links back to the home page: '' on the home page, 'index.html' on other pages, '/' on the 404 page (served at any path). */
   home?: string;
+  /** Keep this page out of search engines (private pages such as onboarding). */
+  noindex?: boolean;
 }
 
-const { title, description, home = '' } = Astro.props;
+const { title, description, home = '', noindex = false } = Astro.props;
 const shareImage = site.url ? `${site.url}/og.png` : null;
+// Icons sit at the site root: relative on normal pages, absolute on the 404 page.
+const root = home.startsWith('/') ? '/' : '';
 ---
 
 <!doctype html>
@@ -19,8 +23,9 @@ const shareImage = site.url ? `${site.url}/og.png` : null;
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="icon" href={`${home}favicon.svg`} type="image/svg+xml" />
-    <link rel="apple-touch-icon" href={`${home}apple-touch-icon.png`} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href={`${root}favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${root}apple-touch-icon.png`} />
     <meta name="theme-color" content="#1d4a35" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_NZ" />

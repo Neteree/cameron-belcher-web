@@ -1,0 +1,397 @@
+<script lang="ts">
+  // Onboarding: a new client's details for their site. Sends through Web3Forms
+  // like the contact form. Besides the readable answers, it attaches the same
+  // details as one line of JSON between markers, which the starter's
+  // scripts/onboard.js turns into the client's site. Add-ons Cameron agreed
+  // with them come from the link, e.g. onboarding.html?modules=food.
+  import { onMount } from 'svelte';
+  import { site } from '../site.config';
+  import { themes, modules as knownModules } from '../data/themes';
+
+  let name = $state('');
+  let suburb = $state('');
+  let city = $state('Auckland');
+  let about = $state('');
+  let headline = $state('');
+  let standout = $state('');
+  let visit = $state('');
+  let hours = $state([{ days: '', times: '' }]);
+  let enquiryTypes = $state('');
+  let theme = $state('');
+  let email = $state('');
+  let phone = $state('');
+  let notes = $state('');
+  let botcheck = $state(false);
+  let modules = $state<string[]>([]);
+  let tried = $state(false);
+  let status = $state<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+
+  onMount(() => {
+    const asked = new URLSearchParams(location.search).get('modules') ?? '';
+    modules = asked.split(',').map((m) => m.trim()).filter((m) => knownModules.includes(m));
+  });
+
+  const filledHours = $derived(hours.filter((row) => row.days.trim() && row.times.trim()));
+  const errors = $derived({
+    name: name.trim() ? '' : 'Enter your business name.',
+    suburb: suburb.trim() ? '' : 'Enter your suburb or area.',
+    city: city.trim() ? '' : 'Enter your town or city.',
+    about: about.trim().length >= 20 ? '' : 'Tell customers a little about what you do (a sentence or two).',
+    visit: visit.trim() ? '' : 'Tell customers where to find you, or the area you cover.',
+    hours: filledHours.length ? '' : 'Add at least one line of hours, e.g. "Monday to Friday" and "9am – 5pm".',
+    theme: theme ? '' : 'Choose a look.',
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'Enter an email address like you@example.com.',
+  });
+  const valid = $derived(Object.values(errors).every((e) => !e));
+
+  /** The details in the shape the starter's onboarding script expects. */
+  function clientJson() {
+    return {
+      onboarding: 1,
+      name: name.trim(),
+      suburb: suburb.trim(),
+      city: city.trim(),
+      about: about.trim(),
+      headline: headline.trim(),
+      standout: standout.trim(),
+      visit: visit.trim(),
+      hours: filledHours.map((row) => ({ days: row.days.trim(), times: row.times.trim() })),
+      enquiryTypes: enquiryTypes.split('\n').map((line) => line.trim()).filter(Boolean),
+      theme,
+      modules,
+      contact: { email: email.trim(), phone: phone.trim() },
+    };
+  }
+
+  async function submit(event: SubmitEvent) {
+    event.preventDefault();
+    tried = true;
+    if (!valid || status === 'sending') return;
+    if (!site.formKey) {
+      status = 'sent';
+      return;
+    }
+    status = 'sending';
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: site.formKey,
+          subject: `Onboarding: ${name.trim()}`,
+          from_name: site.name,
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim() || '-',
+          where: `${suburb.trim()}, ${city.trim()}`,
+          look: theme,
+          notes: notes.trim() || '-',
+          client_json: `---CLIENT-JSON--- ${JSON.stringify(clientJson())} ---END-CLIENT-JSON---`,
+          botcheck,
+        }),
+      });
+      const result = await response.json();
+      status = result.success ? 'sent' : 'failed';
+    } catch {
+      status = 'failed';
+    }
+  }
+</script>
+
+{#if status === 'sent'}
+  <div class="sent" role="status">
+    <p class="big">Thanks, that’s everything I need.</p>
+    {#if site.formKey}
+      <p>
+        Next, email me your logo and any photos you’d like on the site. I’ll send you a preview
+        link to look over before anything goes live.
+      </p>
+    {:else}
+      <p>This form isn't connected yet, so nothing was sent.</p>
+    {/if}
+  </div>
+{:else}
+  <form novalidate onsubmit={submit}>
+    <fieldset>
+      <legend>Your business</legend>
+      <div class="field">
+        <label for="o-name">Business name</label>
+        <input id="o-name" autocomplete="organization" bind:value={name} aria-invalid={tried && !!errors.name} aria-describedby="o-name-err" />
+        {#if tried && errors.name}<p class="error" id="o-name-err">{errors.name}</p>{/if}
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="o-suburb">Suburb or area</label>
+          <input id="o-suburb" bind:value={suburb} aria-invalid={tried && !!errors.suburb} aria-describedby="o-suburb-err" />
+          {#if tried && errors.suburb}<p class="error" id="o-suburb-err">{errors.suburb}</p>{/if}
+        </div>
+        <div class="field">
+          <label for="o-city">Town or city</label>
+          <input id="o-city" autocomplete="address-level2" bind:value={city} aria-invalid={tried && !!errors.city} aria-describedby="o-city-err" />
+          {#if tried && errors.city}<p class="error" id="o-city-err">{errors.city}</p>{/if}
+        </div>
+      </div>
+      <div class="field">
+        <label for="o-about">What you do, in a sentence or two</label>
+        <p class="hint" id="o-about-hint">Write it the way you’d tell a new customer. This goes near the top of your site.</p>
+        <textarea id="o-about" rows="3" bind:value={about} aria-invalid={tried && !!errors.about} aria-describedby="o-about-hint o-about-err"></textarea>
+        {#if tried && errors.about}<p class="error" id="o-about-err">{errors.about}</p>{/if}
+      </div>
+      <div class="field">
+        <label for="o-headline">A headline <span class="optional">(optional)</span></label>
+        <p class="hint" id="o-headline-hint">A few punchy words, like “Bread worth the ferry ride.” Leave it blank and I’ll suggest one.</p>
+        <input id="o-headline" bind:value={headline} aria-describedby="o-headline-hint" />
+      </div>
+      <div class="field">
+        <label for="o-standout">What sets you apart, in a few words <span class="optional">(optional)</span></label>
+        <p class="hint" id="o-standout-hint">Like “family run since 1998” or “first loaves out at 6am”.</p>
+        <input id="o-standout" bind:value={standout} aria-describedby="o-standout-hint" />
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Finding you</legend>
+      <div class="field">
+        <label for="o-visit">Where customers find you</label>
+        <p class="hint" id="o-visit-hint">Your address and any tips, or the areas you cover if you come to them.</p>
+        <textarea id="o-visit" rows="2" bind:value={visit} aria-invalid={tried && !!errors.visit} aria-describedby="o-visit-hint o-visit-err"></textarea>
+        {#if tried && errors.visit}<p class="error" id="o-visit-err">{errors.visit}</p>{/if}
+      </div>
+      <div class="field">
+        <span class="label" id="o-hours-label">Opening hours</span>
+        {#each hours as row, i (i)}
+          <div class="hours-row">
+            <input aria-label="Days, line {i + 1}" placeholder="Monday to Friday" bind:value={row.days} />
+            <input aria-label="Times, line {i + 1}" placeholder="9am – 5pm" bind:value={row.times} />
+            {#if hours.length > 1}
+              <button class="remove" type="button" aria-label="Remove line {i + 1}" onclick={() => hours.splice(i, 1)}>×</button>
+            {/if}
+          </div>
+        {/each}
+        <button class="add-line" type="button" onclick={() => hours.push({ days: '', times: '' })}>Add another line</button>
+        {#if tried && errors.hours}<p class="error">{errors.hours}</p>{/if}
+      </div>
+      <div class="field">
+        <label for="o-enquiries">What customers usually contact you about <span class="optional">(optional)</span></label>
+        <p class="hint" id="o-enquiries-hint">One per line, like “A quote” or “Booking a table”. These become choices on your enquiry form.</p>
+        <textarea id="o-enquiries" rows="3" bind:value={enquiryTypes} aria-describedby="o-enquiries-hint"></textarea>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Your look</legend>
+      <div class="themes">
+        {#each themes as option (option.id)}
+          <label class="theme theme-{option.id}" class:chosen={theme === option.id}>
+            <input type="radio" name="theme" value={option.id} bind:group={theme} />
+            <span class="swatches" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span class="theme-name">{option.name}</span>
+            <span class="theme-text">{option.text}</span>
+          </label>
+        {/each}
+      </div>
+      {#if tried && errors.theme}<p class="error">{errors.theme}</p>{/if}
+    </fieldset>
+
+    <fieldset>
+      <legend>Contact details for me</legend>
+      <p class="hint">Only I see these. They aren’t shown on your site.</p>
+      <div class="row">
+        <div class="field">
+          <label for="o-email">Your email</label>
+          <input id="o-email" type="email" autocomplete="email" bind:value={email} aria-invalid={tried && !!errors.email} aria-describedby="o-email-err" />
+          {#if tried && errors.email}<p class="error" id="o-email-err">{errors.email}</p>{/if}
+        </div>
+        <div class="field">
+          <label for="o-phone">Phone <span class="optional">(optional)</span></label>
+          <input id="o-phone" type="tel" autocomplete="tel" bind:value={phone} />
+        </div>
+      </div>
+      <div class="field">
+        <label for="o-notes">Anything else? <span class="optional">(optional)</span></label>
+        <textarea id="o-notes" rows="3" bind:value={notes}></textarea>
+      </div>
+    </fieldset>
+
+    <input class="botcheck" type="checkbox" tabindex="-1" aria-hidden="true" bind:checked={botcheck} />
+    <button class="button" type="submit" disabled={status === 'sending'}>
+      {status === 'sending' ? 'Sending…' : 'Send my details'}
+    </button>
+    {#if status === 'failed'}
+      <p class="error" role="alert">Sorry, that didn't send. Please try again in a moment.</p>
+    {/if}
+    {#if !site.formKey}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
+  </form>
+{/if}
+
+<style>
+  form {
+    display: grid;
+    gap: 2rem;
+  }
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    display: grid;
+    gap: 1.1rem;
+  }
+  legend {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    padding: 0;
+    margin-bottom: 0.9rem;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1.1rem;
+  }
+  .field {
+    display: grid;
+    gap: 0.35rem;
+  }
+  label,
+  .label {
+    font-weight: 600;
+  }
+  .optional {
+    font-weight: 400;
+    color: var(--soft);
+  }
+  .hint {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--soft);
+  }
+  input:not([type='radio']):not([type='checkbox']),
+  textarea {
+    width: 100%;
+    border: 2px solid var(--ink);
+    border-radius: 0.4rem;
+    background: var(--paper);
+    padding: 0.65rem 0.8rem;
+  }
+  [aria-invalid='true'] {
+    border-color: var(--error) !important;
+  }
+  .error {
+    margin: 0;
+    color: var(--error);
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .hours-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 0.5rem;
+  }
+  .remove,
+  .add-line {
+    border: 2px solid var(--ink);
+    border-radius: 0.4rem;
+    background: none;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .remove {
+    width: 2.6rem;
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  .add-line {
+    justify-self: start;
+    padding: 0.4rem 0.8rem;
+  }
+  .themes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.8rem;
+  }
+  .theme {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    padding: 1rem;
+    border: 2px solid var(--rule);
+    border-radius: 0.6rem;
+    cursor: pointer;
+    font-weight: 400;
+  }
+  .theme.chosen {
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px var(--green);
+  }
+  .theme:has(input:focus-visible) {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+  }
+  .theme input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .swatches {
+    display: flex;
+    gap: 0.3rem;
+  }
+  .swatches span {
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+  }
+  /* Each preset's paper, accent and highlight colours, and a hint of its heading font. */
+  .theme-bold .swatches span:nth-child(1) { background: #f7f6f2; }
+  .theme-bold .swatches span:nth-child(2) { background: #2350c8; }
+  .theme-bold .swatches span:nth-child(3) { background: #f4c430; }
+  .theme-bold .theme-name { font-family: 'Arial Black', system-ui, sans-serif; }
+  .theme-classic .swatches span:nth-child(1) { background: #f6f3ec; }
+  .theme-classic .swatches span:nth-child(2) { background: #1e5a3c; }
+  .theme-classic .swatches span:nth-child(3) { background: #d9a441; }
+  .theme-classic .theme-name { font-family: Georgia, serif; }
+  .theme-calm .swatches span:nth-child(1) { background: #f4f8f8; }
+  .theme-calm .swatches span:nth-child(2) { background: #0d737a; }
+  .theme-calm .swatches span:nth-child(3) { background: #ffd2b8; }
+  .theme-calm .theme-name { font-family: 'Segoe UI', system-ui, sans-serif; }
+  .theme-warm .swatches span:nth-child(1) { background: #fbf5ee; }
+  .theme-warm .swatches span:nth-child(2) { background: #a8422a; }
+  .theme-warm .swatches span:nth-child(3) { background: #f2c14e; }
+  .theme-warm .theme-name { font-family: Georgia, serif; }
+  .theme-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  .theme-text {
+    font-size: 0.92rem;
+    color: var(--soft);
+  }
+  form .button {
+    justify-self: start;
+  }
+  form .button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .botcheck {
+    display: none;
+  }
+  .note {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--soft);
+  }
+  .sent {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .sent p {
+    margin: 0;
+  }
+  .big {
+    font-family: var(--display);
+    font-size: 1.8rem;
+  }
+</style>
