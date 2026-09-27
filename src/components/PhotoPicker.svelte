@@ -1,14 +1,33 @@
+<script lang="ts" module>
+  export interface ExistingPhoto {
+    file: string;
+    src: string;
+    original: string;
+    alt: string;
+    removed: boolean;
+  }
+</script>
+
 <script lang="ts">
   // Choosing photos to upload: each chosen photo shows a small preview and can
   // be removed, and choosing again adds to the list instead of replacing it.
-  // With `max` 1 (a logo), choosing again swaps the photo.
+  // With `max` 1 (a logo), choosing again swaps the photo. `existing` photos
+  // (already on the client's site) are listed the same way, above new ones.
   let {
     label,
     photos = $bindable([]),
     descriptions = $bindable([]),
+    existing = $bindable([]),
     max = 12,
     describe = true,
-  }: { label: string; photos?: File[]; descriptions?: string[]; max?: number; describe?: boolean } = $props();
+  }: {
+    label: string;
+    photos?: File[];
+    descriptions?: string[];
+    existing?: ExistingPhoto[];
+    max?: number;
+    describe?: boolean;
+  } = $props();
 
   let previews = $state<string[]>([]);
   $effect(() => {
@@ -37,28 +56,40 @@
 </script>
 
 <div class="picker">
-  <label class="choose">
-    {photos.length ? (max === 1 ? `Change ${label}` : `Add more ${label}`) : `Choose ${label}`}
-    <input type="file" accept="image/jpeg,image/png,image/webp" multiple={max > 1} onchange={add} />
-  </label>
-  {#if photos.length}
+  {#if photos.length || existing.length}
     <ul>
+      {#each existing as current, i (current.file)}
+        <li class:removed={current.removed}>
+          <img src={current.src} alt="" width="64" height="64" />
+          <label class="describe">
+            <span>What’s in photo {i + 1}?{#if current.removed}{' '}<span class="optional">(being removed)</span>{/if}</span>
+            <input maxlength="150" bind:value={current.alt} disabled={current.removed} />
+          </label>
+          <button type="button" onclick={() => (current.removed = !current.removed)} aria-label="{current.removed ? 'Keep' : 'Remove'} photo {i + 1}">
+            {current.removed ? 'Keep' : 'Remove'}
+          </button>
+        </li>
+      {/each}
       {#each photos as photo, i (photo)}
         <li>
           {#if previews[i]}<img src={previews[i]} alt="" width="64" height="64" />{/if}
           {#if describe}
             <label class="describe">
-              <span>What’s in “{photo.name}”? <span class="optional">(optional)</span></span>
+              <span>What’s in photo {existing.length + i + 1}? <span class="optional">(optional)</span></span>
               <input maxlength="150" bind:value={descriptions[i]} />
             </label>
           {:else}
             <span class="name">{photo.name}</span>
           {/if}
-          <button type="button" onclick={() => remove(i)} aria-label="Remove {photo.name}">Remove</button>
+          <button type="button" onclick={() => remove(i)} aria-label="Remove {describe ? `photo ${existing.length + i + 1}` : photo.name}">Remove</button>
         </li>
       {/each}
     </ul>
   {/if}
+  <label class="choose">
+    {photos.length ? (max === 1 ? `Change ${label}` : `Add more ${label}`) : `Choose ${label}`}
+    <input type="file" accept="image/jpeg,image/png,image/webp" multiple={max > 1} onchange={add} />
+  </label>
 </div>
 
 <style>
@@ -93,11 +124,20 @@
     padding: 0;
     list-style: none;
   }
+  li.removed img {
+    opacity: 0.4;
+  }
   li {
     display: grid;
-    grid-template-columns: 4rem 1fr auto;
-    align-items: center;
-    gap: 0.75rem;
+    grid-template-columns: 4rem 1fr;
+    align-items: start;
+    gap: 0.4rem 0.75rem;
+  }
+  li img {
+    grid-row: span 2;
+  }
+  li button {
+    justify-self: start;
   }
   img {
     width: 4rem;

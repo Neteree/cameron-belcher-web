@@ -6,7 +6,7 @@
   import { site } from '../site.config';
   import { send, canUpload } from '../lib/send';
   import { themes } from '../data/themes';
-  import PhotoPicker from './PhotoPicker.svelte';
+  import PhotoPicker, { type ExistingPhoto } from './PhotoPicker.svelte';
 
   type Kind = 'text' | 'hours' | 'news' | 'photos' | 'theme' | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out' | 'other';
   const kinds: { id: Kind; label: string }[] = [
@@ -14,7 +14,7 @@
     { id: 'hours', label: 'Update opening hours' },
     { id: 'news', label: 'Post news or a special' },
     // Photos can only be sent through the intake.
-    ...(canUpload ? [{ id: 'photos' as Kind, label: 'Add photos to the gallery' }] : []),
+    ...(canUpload ? [{ id: 'photos' as Kind, label: 'Change your photos' }] : []),
     { id: 'theme', label: 'Change the look' },
     { id: 'menu-add', label: 'Add a menu item' },
     { id: 'menu-price', label: 'Change a price on the menu' },
@@ -47,6 +47,31 @@
     theme: '',
   });
 
+  // The client's current gallery, when the link names their site
+  // (request.html?site=https://their-site.pages.dev): each site publishes photos.json.
+  let existing = $state<ExistingPhoto[]>([]);
+  const PLACEHOLDER = '[PLACEHOLDER';
+  $effect(() => {
+    const given = new URLSearchParams(location.search).get('site');
+    let siteUrl: URL;
+    try {
+      siteUrl = new URL(given ?? '');
+    } catch {
+      return;
+    }
+    if (siteUrl.protocol !== 'https:' && siteUrl.hostname !== 'localhost') return;
+    fetch(new URL('photos.json', siteUrl.href.replace(/\/?$/, '/')))
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!Array.isArray(data?.gallery)) return;
+        existing = data.gallery.map((item: { file: string; src: string; alt: string }) => {
+          const alt = item.alt.startsWith(PLACEHOLDER) ? '' : item.alt;
+          return { file: item.file, src: new URL(item.src, siteUrl).href, original: alt, alt, removed: false };
+        });
+      })
+      .catch(() => {});
+  });
+
   let email = $state('');
   let business = $state('');
   let changes = $state([blank()]);
@@ -74,7 +99,8 @@
       case 'menu-sold-out':
         return c.name.trim() ? '' : 'Fill in the item name, exactly as it is on the menu.';
       case 'photos': {
-        if (!c.photos.length) return 'Choose at least one photo.';
+        const touched = existing.some((p) => p.removed || p.alt.trim() !== p.original);
+        if (!c.photos.length && !(firstPhotos(c) && touched)) return existing.length ? 'Add, remove or re-describe at least one photo.' : 'Choose at least one photo.';
         const wrong = c.photos.find((file) => !IMAGE_TYPES.includes(file.type));
         if (wrong) return `“${wrong.name}” isn’t a JPG, PNG or WebP photo.`;
         const big = c.photos.find((file) => file.size > MAX_BYTES);
@@ -96,11 +122,14 @@
   });
   const valid = $derived(!errors.email && !errors.business && !errors.photos && errors.changes.every((e) => !e));
 
+  /** The site's current photos are shown (and changed) in the first photo change only. */
+  const firstPhotos = (c: Change) => changes.find((other) => other.kind === 'photos') === c;
+
   /** The changes in the shape scripts/apply-changes.js takes. */
   function toChanges() {
     // Uploaded photos are sent as one list; each photo change points at its place in it.
     let upload = 0;
-    return changes.map((c) => {
+    return changes.flatMap((c) => {
       switch (c.kind) {
         case 'text':
           return { type: 'text', current: c.current.trim(), new: c.replacement.trim() };
@@ -118,8 +147,18 @@
           return { type: 'menu-remove', name: c.name.trim() };
         case 'menu-sold-out':
           return { type: 'menu-sold-out', name: c.name.trim(), soldOut: c.soldOut };
-        case 'photos':
-          return { type: 'gallery-add', photos: c.photos.map((_, j) => ({ upload: upload++, alt: (c.photoDescriptions[j] ?? '').trim() })) };
+        case 'photos': {
+          const current = firstPhotos(c) ? existing : [];
+          return [
+            ...current.filter((p) => p.removed).map((p) => ({ type: 'gallery-remove', file: p.file })),
+            ...current
+              .filter((p) => !p.removed && p.alt.trim() && p.alt.trim() !== p.original)
+              .map((p) => ({ type: 'gallery-describe', file: p.file, alt: p.alt.trim() })),
+            ...(c.photos.length
+              ? [{ type: 'gallery-add', photos: c.photos.map((_, j) => ({ upload: upload++, alt: (c.photoDescriptions[j] ?? '').trim() })) }]
+              : []),
+          ];
+        }
         case 'theme':
           return { type: 'theme', theme: c.theme };
         default:
@@ -231,7 +270,11 @@
         {:else if change.kind === 'photos'}
           <div class="field">
             <span class="label">Your photos</span>
-            <PhotoPicker label="photos" bind:photos={change.photos} bind:descriptions={change.photoDescriptions} />
+            {#if firstPhotos(change)}
+              <PhotoPicker label="photos" bind:photos={change.photos} bind:descriptions={change.photoDescriptions} bind:existing />
+            {:else}
+              <PhotoPicker label="photos" bind:photos={change.photos} bind:descriptions={change.photoDescriptions} />
+            {/if}
           </div>
         {:else if change.kind === 'theme'}
           <div class="field">
