@@ -14,7 +14,7 @@ const share = `<!doctype html><html><head><link rel="stylesheet" href="${fonts}"
   .card { box-sizing: border-box; height: 100%; padding: 72px 80px; display: flex; flex-direction: column; justify-content: space-between; border-bottom: 18px solid #c9962b; }
   .eyebrow { font-weight: 700; font-size: 26px; letter-spacing: 0.14em; text-transform: uppercase; color: #1d4a35; margin: 0; }
   h1 { font-family: 'Alfa Slab One', serif; font-weight: 400; font-size: 84px; line-height: 1.02; margin: 0; max-width: 980px; }
-  h1 span { color: #b3831f; }
+  h1 span { color: #a87a1a; }
   .foot { display: flex; justify-content: space-between; align-items: end; font-size: 30px; font-weight: 500; }
   .name { font-family: 'Alfa Slab One', serif; font-size: 44px; color: #1d4a35; }
 </style></head><body><div class="card">
