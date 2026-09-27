@@ -27,6 +27,7 @@
   // Photos go through the Cloudflare intake; without it, clients email them instead.
   let logo = $state<File | null>(null);
   let photos = $state<File[]>([]);
+  let photoDescriptions = $state<string[]>([]);
   let failure = $state('');
   const MAX_PHOTOS = 12;
   const MAX_BYTES = 15 * 1024 * 1024;
@@ -107,6 +108,8 @@
       modules,
       preOrder,
       contact: { email: email.trim(), phone: phone.trim() },
+      // One per uploaded photo, in the same order; blank ones become a placeholder to fill in.
+      photoDescriptions: canUpload ? photos.map((_, i) => (photoDescriptions[i] ?? '').trim()) : [],
     };
   }
 
@@ -264,9 +267,21 @@
           {#if logo}<p class="picked">{logo.name}</p>{/if}
           <label class="upload">
             Your photos
-            <input id="o-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onchange={(e) => (photos = [...(e.currentTarget.files ?? [])])} />
+            <input id="o-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onchange={(e) => {
+              photos = [...(e.currentTarget.files ?? [])];
+              photoDescriptions = photos.map(() => '');
+            }} />
           </label>
-          {#if photos.length}<p class="picked">{photos.length} photo{photos.length === 1 ? '' : 's'} chosen</p>{/if}
+          {#if photos.length}
+            <p class="picked">{photos.length} photo{photos.length === 1 ? '' : 's'} chosen</p>
+            <p class="hint">Say what’s in each one, like “Our shop front on Dominion Road”. It helps people using screen readers, and search engines.</p>
+            {#each photos as photo, i (i)}
+              <label class="upload">
+                <span>What’s in “{photo.name}”? <span class="optional">(optional)</span></span>
+                <input maxlength="150" bind:value={photoDescriptions[i]} />
+              </label>
+            {/each}
+          {/if}
           {#if tried[3] && errors.photos}<p class="error" role="alert">{errors.photos}</p>{/if}
         {:else}
           <p class="hint">After you send this, email me your logo and any photos you’d like on the site.</p>
