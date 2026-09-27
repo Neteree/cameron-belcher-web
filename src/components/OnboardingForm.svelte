@@ -257,12 +257,12 @@
         <span class="label">Your logo and photos <span class="optional">(optional)</span></span>
         {#if canUpload}
           <p class="hint">Photos of your place, your products and your team make the biggest difference. JPG, PNG or WebP, up to 12 photos.</p>
-          <label class="upload" for="o-logo">
+          <label class="upload">
             Your logo
             <input id="o-logo" type="file" accept="image/jpeg,image/png,image/webp" onchange={(e) => (logo = e.currentTarget.files?.[0] ?? null)} />
           </label>
           {#if logo}<p class="picked">{logo.name}</p>{/if}
-          <label class="upload" for="o-photos">
+          <label class="upload">
             Your photos
             <input id="o-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onchange={(e) => (photos = [...(e.currentTarget.files ?? [])])} />
           </label>

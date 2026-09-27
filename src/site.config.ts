@@ -19,7 +19,7 @@ export const site = {
    * e.g. 'https://cameron-belcher-intake.<account>.workers.dev'. With it, forms
    * go straight into the request queue and onboarding can take photo uploads.
    */
-  intakeUrl: null as string | null,
+  intakeUrl: 'https://cameron-belcher-intake.neteree.workers.dev' as string | null,
   /** Shown on the page only when set. */
   email: null as string | null,
   /**
