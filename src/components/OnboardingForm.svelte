@@ -8,6 +8,7 @@
   import { onMount } from 'svelte';
   import { site } from '../site.config';
   import { themes, modules as knownModules } from '../data/themes';
+  import { send, canUpload } from '../lib/send';
 
   let name = $state('');
   let suburb = $state('');
@@ -23,6 +24,13 @@
   let phone = $state('');
   let notes = $state('');
   let botcheck = $state(false);
+  // Photos go through the Cloudflare intake; without it, clients email them instead.
+  let logo = $state<File | null>(null);
+  let photos = $state<File[]>([]);
+  let failure = $state('');
+  const MAX_PHOTOS = 12;
+  const MAX_BYTES = 15 * 1024 * 1024;
+  const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
   let modules = $state<string[]>([]);
   // Weekend-style ordering ahead for pickup, switched on with &preorder=1 in the link.
   let preOrder = $state(false);
@@ -32,7 +40,7 @@
     { title: 'Your business', fields: ['name', 'suburb', 'city'] },
     { title: 'Your words', fields: ['about'] },
     { title: 'Finding you', fields: ['visit', 'hours'] },
-    { title: 'Your look', fields: ['theme'] },
+    { title: 'Your look', fields: ['theme', 'photos'] },
     { title: 'Contact details', fields: ['email'] },
   ] as const;
   let step = $state(0);
@@ -55,9 +63,20 @@
     visit: visit.trim() ? '' : 'Tell customers where to find you, or the area you cover.',
     hours: filledHours.length ? '' : 'Add at least one line of hours, e.g. "Monday to Friday" and "9am – 5pm".',
     theme: theme ? '' : 'Choose a look.',
+    photos: photoProblem(),
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'Enter an email address like you@example.com.',
   });
   const valid = $derived(Object.values(errors).every((e) => !e));
+
+  function photoProblem() {
+    const all = [...(logo ? [logo] : []), ...photos];
+    if (photos.length > MAX_PHOTOS) return `Please choose up to ${MAX_PHOTOS} photos.`;
+    const wrong = all.find((file) => !IMAGE_TYPES.includes(file.type));
+    if (wrong) return `“${wrong.name}” isn’t a JPG, PNG or WebP photo.`;
+    const big = all.find((file) => file.size > MAX_BYTES);
+    if (big) return `“${big.name}” is too big. Photos can be up to 15 MB each.`;
+    return '';
+  }
   const stepValid = (i: number) => steps[i].fields.every((field) => !errors[field]);
 
   function go(to: number) {
@@ -96,32 +115,34 @@
     tried[step] = true;
     if (step < steps.length - 1) return next();
     if (!valid || status === 'sending') return;
-    if (!site.formKey) {
+    if (!site.formKey && !site.intakeUrl) {
       status = 'sent';
       return;
     }
     status = 'sending';
+    failure = '';
+    const answers = clientJson();
     try {
-      const response = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: site.formKey,
-          subject: `Onboarding: ${name.trim()}`,
-          from_name: site.name,
-          name: name.trim(),
-          email: email.trim(),
-          phone: phone.trim() || '-',
-          where: `${suburb.trim()}, ${city.trim()}`,
+      await send({
+        kind: 'onboarding',
+        subject: `Onboarding: ${answers.name}`,
+        fields: {
+          name: answers.name,
+          email: answers.contact.email,
+          phone: answers.contact.phone || '-',
+          where: `${answers.suburb}, ${answers.city}`,
           look: theme,
           notes: notes.trim() || '-',
-          client_json: `---CLIENT-JSON--- ${JSON.stringify(clientJson())} ---END-CLIENT-JSON---`,
-          botcheck,
-        }),
+        },
+        payload: answers,
+        block: 'CLIENT',
+        logo: canUpload ? logo : null,
+        photos: canUpload ? photos : [],
+        botcheck,
       });
-      const result = await response.json();
-      status = result.success ? 'sent' : 'failed';
-    } catch {
+      status = 'sent';
+    } catch (error) {
+      failure = error instanceof Error ? error.message : '';
       status = 'failed';
     }
   }
@@ -130,10 +151,12 @@
 {#if status === 'sent'}
   <div class="sent" role="status">
     <p class="big">Thanks, that’s everything I need.</p>
-    {#if site.formKey}
+    {#if site.formKey || site.intakeUrl}
       <p>
-        Next, email me your logo and any photos you’d like on the site. I’ll send you a preview
-        link to look over before anything goes live.
+        {canUpload && (logo || photos.length)
+          ? 'Your photos came through too.'
+          : 'Next, email me your logo and any photos you’d like on the site.'}
+        I’ll send you a preview link to look over before anything goes live.
       </p>
     {:else}
       <p>This form isn't connected yet, so nothing was sent.</p>
@@ -229,6 +252,26 @@
         {/each}
       </div>
       {#if tried[3] && errors.theme}<p class="error">{errors.theme}</p>{/if}
+
+      <div class="field">
+        <span class="label">Your logo and photos <span class="optional">(optional)</span></span>
+        {#if canUpload}
+          <p class="hint">Photos of your place, your products and your team make the biggest difference. JPG, PNG or WebP, up to 12 photos.</p>
+          <label class="upload" for="o-logo">
+            Your logo
+            <input id="o-logo" type="file" accept="image/jpeg,image/png,image/webp" onchange={(e) => (logo = e.currentTarget.files?.[0] ?? null)} />
+          </label>
+          {#if logo}<p class="picked">{logo.name}</p>{/if}
+          <label class="upload" for="o-photos">
+            Your photos
+            <input id="o-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onchange={(e) => (photos = [...(e.currentTarget.files ?? [])])} />
+          </label>
+          {#if photos.length}<p class="picked">{photos.length} photo{photos.length === 1 ? '' : 's'} chosen</p>{/if}
+          {#if tried[3] && errors.photos}<p class="error" role="alert">{errors.photos}</p>{/if}
+        {:else}
+          <p class="hint">After you send this, email me your logo and any photos you’d like on the site.</p>
+        {/if}
+      </div>
     </fieldset>
 
     <fieldset hidden={step !== 4}>
@@ -265,9 +308,9 @@
       {/if}
     </div>
     {#if status === 'failed'}
-      <p class="error" role="alert">Sorry, that didn't send. Please try again in a moment.</p>
+      <p class="error" role="alert">{failure || "Sorry, that didn't send."} Please try again in a moment.</p>
     {/if}
-    {#if !site.formKey}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
+    {#if !site.formKey && !site.intakeUrl}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
   </form>
 {/if}
 
@@ -353,6 +396,18 @@
   .add-line {
     justify-self: start;
     padding: 0.4rem 0.8rem;
+  }
+  .upload {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .upload input {
+    font: inherit;
+  }
+  .picked {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--soft);
   }
   .themes {
     display: grid;
