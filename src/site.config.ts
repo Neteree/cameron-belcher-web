@@ -14,6 +14,12 @@ export const site = {
    * previews on Facebook and in messages need it to show the share image.
    */
   url: 'https://cameron-belcher-web.pages.dev' as string | null,
+  /**
+   * The Cloudflare intake Worker (new-empty-repo/worker) once it's deployed,
+   * e.g. 'https://cameron-belcher-intake.<account>.workers.dev'. With it, forms
+   * go straight into the request queue and onboarding can take photo uploads.
+   */
+  intakeUrl: null as string | null,
   /** Shown on the page only when set. */
   email: null as string | null,
   /**

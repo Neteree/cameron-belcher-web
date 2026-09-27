@@ -5,6 +5,7 @@
   // scripts/apply-changes.js takes. Nothing happens until the client confirms
   // from their saved email address and Cameron approves the price.
   import { site } from '../site.config';
+  import { send } from '../lib/send';
 
   type Kind = 'text' | 'hours' | 'news' | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out' | 'other';
   const kinds: { id: Kind; label: string }[] = [
@@ -104,28 +105,22 @@
     event.preventDefault();
     tried = true;
     if (!valid || status === 'sending') return;
-    if (!site.formKey) {
+    if (!site.formKey && !site.intakeUrl) {
       status = 'sent';
       return;
     }
     status = 'sending';
     const request = { request: 1, email: email.trim(), business: business.trim(), changes: toChanges() };
     try {
-      const response = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: site.formKey,
-          subject: `Change request: ${business.trim()}`,
-          from_name: site.name,
-          email: email.trim(),
-          business: business.trim(),
-          changes_json: `---CHANGES-JSON--- ${JSON.stringify(request)} ---END-CHANGES-JSON---`,
-          botcheck,
-        }),
+      await send({
+        kind: 'request',
+        subject: `Change request: ${request.business}`,
+        fields: { email: request.email, business: request.business },
+        payload: request,
+        block: 'CHANGES',
+        botcheck,
       });
-      const result = await response.json();
-      status = result.success ? 'sent' : 'failed';
+      status = 'sent';
     } catch {
       status = 'failed';
     }
@@ -135,7 +130,7 @@
 {#if status === 'sent'}
   <div class="sent" role="status">
     <p class="big">Request sent.</p>
-    {#if site.formKey}
+    {#if site.formKey || site.intakeUrl}
       <p>
         You’ll get an email at the address I have for you. Click the link in it to confirm the
         request, then I’ll send you the price before any work starts.
@@ -260,7 +255,7 @@
     {#if status === 'failed'}
       <p class="error" role="alert">Sorry, that didn't send. Please try again in a moment.</p>
     {/if}
-    {#if !site.formKey}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
+    {#if !site.formKey && !site.intakeUrl}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
   </form>
 {/if}
 

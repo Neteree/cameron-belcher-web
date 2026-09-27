@@ -2,6 +2,7 @@
   // Enquiry form. Sends through Web3Forms, which emails the enquiry to the
   // address behind `site.formKey`. Without a key it sends nothing.
   import { site } from '../site.config';
+  import { send } from '../lib/send';
 
   let name = $state('');
   let email = $state('');
@@ -23,29 +24,21 @@
     event.preventDefault();
     tried = true;
     if (!valid || status === 'sending') return;
-    if (!site.formKey) {
+    if (!site.formKey && !site.intakeUrl) {
       status = 'sent';
       return;
     }
     status = 'sending';
+    const answers = {
+      name: name.trim(),
+      email: email.trim(),
+      business: business.trim() || '-',
+      need,
+      message: message.trim() || '-',
+    };
     try {
-      const response = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: site.formKey,
-          subject: `Website enquiry from ${name.trim()}`,
-          from_name: site.name,
-          name: name.trim(),
-          email,
-          business: business.trim() || '-',
-          need,
-          message: message.trim() || '-',
-          botcheck,
-        }),
-      });
-      const result = await response.json();
-      status = result.success ? 'sent' : 'failed';
+      await send({ kind: 'contact', subject: `Website enquiry from ${answers.name}`, fields: answers, payload: answers, botcheck });
+      status = 'sent';
     } catch {
       status = 'failed';
     }
@@ -60,7 +53,7 @@
 {#if status === 'sent'}
   <div class="sent" role="status">
     <p class="big">Thanks, {name.trim().split(' ')[0]}.</p>
-    {#if site.formKey}
+    {#if site.formKey || site.intakeUrl}
       <p>Your enquiry is on its way. I'll get back to you soon.</p>
     {:else}
       <p>This form isn't connected yet, so nothing was sent. Once it's live, enquiries will arrive straight away.</p>
@@ -107,7 +100,7 @@
     {#if status === 'failed'}
       <p class="error" role="alert">Sorry, that didn't send. Please try again in a moment.</p>
     {/if}
-    {#if !site.formKey}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
+    {#if !site.formKey && !site.intakeUrl}<p class="note">Not connected yet: this form doesn't send anything.</p>{/if}
   </form>
 {/if}
 
