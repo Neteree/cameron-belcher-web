@@ -23,16 +23,17 @@
   let notes = $state('');
   let botcheck = $state(false);
   let modules = $state<string[]>([]);
-  // Four short steps instead of one long form. Each step checks only its own
+  // Five short steps instead of one long form. Each step checks only its own
   // answers before moving on; all answers stay in memory until the last step.
   const steps = [
-    { title: 'Your business', fields: ['name', 'suburb', 'city', 'about'] },
+    { title: 'Your business', fields: ['name', 'suburb', 'city'] },
+    { title: 'Your words', fields: ['about'] },
     { title: 'Finding you', fields: ['visit', 'hours'] },
     { title: 'Your look', fields: ['theme'] },
     { title: 'Contact details', fields: ['email'] },
   ] as const;
   let step = $state(0);
-  let tried = $state([false, false, false, false]);
+  let tried = $state(steps.map(() => false));
   let heading = $state<HTMLElement>();
   let status = $state<'idle' | 'sending' | 'sent' | 'failed'>('idle');
 
@@ -159,11 +160,15 @@
           {#if tried[0] && errors.city}<p class="error" id="o-city-err">{errors.city}</p>{/if}
         </div>
       </div>
+    </fieldset>
+
+    <fieldset hidden={step !== 1}>
+      <legend class="visually-hidden">Your words</legend>
       <div class="field">
         <label for="o-about">What you do, in a sentence or two</label>
         <p class="hint" id="o-about-hint">Write it the way you’d tell a new customer. This goes near the top of your site.</p>
-        <textarea id="o-about" rows="3" bind:value={about} aria-invalid={tried[0] && !!errors.about} aria-describedby="o-about-hint o-about-err"></textarea>
-        {#if tried[0] && errors.about}<p class="error" id="o-about-err">{errors.about}</p>{/if}
+        <textarea id="o-about" rows="3" bind:value={about} aria-invalid={tried[1] && !!errors.about} aria-describedby="o-about-hint o-about-err"></textarea>
+        {#if tried[1] && errors.about}<p class="error" id="o-about-err">{errors.about}</p>{/if}
       </div>
       <div class="field">
         <label for="o-headline">A headline <span class="optional">(optional)</span></label>
@@ -177,13 +182,13 @@
       </div>
     </fieldset>
 
-    <fieldset hidden={step !== 1}>
+    <fieldset hidden={step !== 2}>
       <legend class="visually-hidden">Finding you</legend>
       <div class="field">
         <label for="o-visit">Where customers find you</label>
         <p class="hint" id="o-visit-hint">Your address and any tips, or the areas you cover if you come to them.</p>
-        <textarea id="o-visit" rows="2" bind:value={visit} aria-invalid={tried[1] && !!errors.visit} aria-describedby="o-visit-hint o-visit-err"></textarea>
-        {#if tried[1] && errors.visit}<p class="error" id="o-visit-err">{errors.visit}</p>{/if}
+        <textarea id="o-visit" rows="2" bind:value={visit} aria-invalid={tried[2] && !!errors.visit} aria-describedby="o-visit-hint o-visit-err"></textarea>
+        {#if tried[2] && errors.visit}<p class="error" id="o-visit-err">{errors.visit}</p>{/if}
       </div>
       <div class="field">
         <span class="label" id="o-hours-label">Opening hours</span>
@@ -197,7 +202,7 @@
           </div>
         {/each}
         <button class="add-line" type="button" onclick={() => hours.push({ days: '', times: '' })}>Add another line</button>
-        {#if tried[1] && errors.hours}<p class="error">{errors.hours}</p>{/if}
+        {#if tried[2] && errors.hours}<p class="error">{errors.hours}</p>{/if}
       </div>
       <div class="field">
         <label for="o-enquiries">What customers usually contact you about <span class="optional">(optional)</span></label>
@@ -206,7 +211,7 @@
       </div>
     </fieldset>
 
-    <fieldset hidden={step !== 2}>
+    <fieldset hidden={step !== 3}>
       <legend class="visually-hidden">Your look</legend>
       <div class="themes">
         {#each themes as option (option.id)}
@@ -218,17 +223,17 @@
           </label>
         {/each}
       </div>
-      {#if tried[2] && errors.theme}<p class="error">{errors.theme}</p>{/if}
+      {#if tried[3] && errors.theme}<p class="error">{errors.theme}</p>{/if}
     </fieldset>
 
-    <fieldset hidden={step !== 3}>
+    <fieldset hidden={step !== 4}>
       <legend class="visually-hidden">Contact details for me</legend>
       <p class="hint">Only I see these. They aren’t shown on your site.</p>
       <div class="row">
         <div class="field">
           <label for="o-email">Your email</label>
-          <input id="o-email" type="email" autocomplete="email" bind:value={email} aria-invalid={tried[3] && !!errors.email} aria-describedby="o-email-err" />
-          {#if tried[3] && errors.email}<p class="error" id="o-email-err">{errors.email}</p>{/if}
+          <input id="o-email" type="email" autocomplete="email" bind:value={email} aria-invalid={tried[4] && !!errors.email} aria-describedby="o-email-err" />
+          {#if tried[4] && errors.email}<p class="error" id="o-email-err">{errors.email}</p>{/if}
         </div>
         <div class="field">
           <label for="o-phone">Phone <span class="optional">(optional)</span></label>
@@ -439,10 +444,11 @@
     background: var(--green);
     transition: width 0.25s ease;
   }
-  .fill-1 { width: 25%; }
-  .fill-2 { width: 50%; }
-  .fill-3 { width: 75%; }
-  .fill-4 { width: 100%; }
+  .fill-1 { width: 20%; }
+  .fill-2 { width: 40%; }
+  .fill-3 { width: 60%; }
+  .fill-4 { width: 80%; }
+  .fill-5 { width: 100%; }
   .nav {
     display: flex;
     flex-wrap: wrap;
