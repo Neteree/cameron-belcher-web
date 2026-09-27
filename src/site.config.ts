@@ -13,7 +13,7 @@ export const site = {
    * The live address, e.g. 'https://example.co.nz' (no trailing slash). Link
    * previews on Facebook and in messages need it to show the share image.
    */
-  url: null as string | null,
+  url: 'https://cameron-belcher-web.pages.dev' as string | null,
   /** Shown on the page only when set. */
   email: null as string | null,
   /**
