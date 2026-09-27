@@ -9,6 +9,7 @@
   import { site } from '../site.config';
   import { themes, modules as knownModules } from '../data/themes';
   import { send, canUpload } from '../lib/send';
+  import PhotoPicker from './PhotoPicker.svelte';
 
   let name = $state('');
   let suburb = $state('');
@@ -25,7 +26,8 @@
   let notes = $state('');
   let botcheck = $state(false);
   // Photos go through the Cloudflare intake; without it, clients email them instead.
-  let logo = $state<File | null>(null);
+  let logos = $state<File[]>([]);
+  const logo = $derived(logos[0] ?? null);
   let photos = $state<File[]>([]);
   let photoDescriptions = $state<string[]>([]);
   let failure = $state('');
@@ -260,28 +262,10 @@
         <span class="label">Your logo and photos <span class="optional">(optional)</span></span>
         {#if canUpload}
           <p class="hint">Photos of your place, your products and your team make the biggest difference. JPG, PNG or WebP, up to 12 photos.</p>
-          <label class="upload">
-            Your logo
-            <input id="o-logo" type="file" accept="image/jpeg,image/png,image/webp" onchange={(e) => (logo = e.currentTarget.files?.[0] ?? null)} />
-          </label>
-          {#if logo}<p class="picked">{logo.name}</p>{/if}
-          <label class="upload">
-            Your photos
-            <input id="o-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple onchange={(e) => {
-              photos = [...(e.currentTarget.files ?? [])];
-              photoDescriptions = photos.map(() => '');
-            }} />
-          </label>
-          {#if photos.length}
-            <p class="picked">{photos.length} photo{photos.length === 1 ? '' : 's'} chosen</p>
-            <p class="hint">Say what’s in each one, like “Our shop front on Dominion Road”. It helps people using screen readers, and search engines.</p>
-            {#each photos as photo, i (i)}
-              <label class="upload">
-                <span>What’s in “{photo.name}”? <span class="optional">(optional)</span></span>
-                <input maxlength="150" bind:value={photoDescriptions[i]} />
-              </label>
-            {/each}
-          {/if}
+          <span class="label">Your logo</span>
+          <PhotoPicker label="logo" bind:photos={logos} max={1} describe={false} />
+          <span class="label">Your photos</span>
+          <PhotoPicker label="photos" bind:photos bind:descriptions={photoDescriptions} />
           {#if tried[3] && errors.photos}<p class="error" role="alert">{errors.photos}</p>{/if}
         {:else}
           <p class="hint">After you send this, email me your logo and any photos you’d like on the site.</p>
@@ -411,18 +395,6 @@
   .add-line {
     justify-self: start;
     padding: 0.4rem 0.8rem;
-  }
-  .upload {
-    display: grid;
-    gap: 0.35rem;
-  }
-  .upload input {
-    font: inherit;
-  }
-  .picked {
-    margin: 0;
-    font-size: 0.92rem;
-    color: var(--soft);
   }
   .themes {
     display: grid;

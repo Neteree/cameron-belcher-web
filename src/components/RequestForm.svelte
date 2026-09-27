@@ -6,6 +6,7 @@
   import { site } from '../site.config';
   import { send, canUpload } from '../lib/send';
   import { themes } from '../data/themes';
+  import PhotoPicker from './PhotoPicker.svelte';
 
   type Kind = 'text' | 'hours' | 'news' | 'photos' | 'theme' | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out' | 'other';
   const kinds: { id: Kind; label: string }[] = [
@@ -228,22 +229,10 @@
             <textarea id="r-body-{i}" rows="4" bind:value={change.body}></textarea>
           </div>
         {:else if change.kind === 'photos'}
-          <label class="field">
-            Your photos
-            <input type="file" accept="image/jpeg,image/png,image/webp" multiple onchange={(e) => {
-              change.photos = [...(e.currentTarget.files ?? [])];
-              change.photoDescriptions = change.photos.map(() => '');
-            }} />
-          </label>
-          {#if change.photos.length}
-            <p class="hint">Say what’s in each one, like “Our shop front on Dominion Road”. It helps people using screen readers, and search engines.</p>
-            {#each change.photos as photo, j (j)}
-              <label class="field">
-                <span>What’s in “{photo.name}”? <span class="optional">(optional)</span></span>
-                <input maxlength="150" bind:value={change.photoDescriptions[j]} />
-              </label>
-            {/each}
-          {/if}
+          <div class="field">
+            <span class="label">Your photos</span>
+            <PhotoPicker label="photos" bind:photos={change.photos} bind:descriptions={change.photoDescriptions} />
+          </div>
         {:else if change.kind === 'theme'}
           <div class="field">
             <label for="r-theme-{i}">New look</label>
