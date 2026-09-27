@@ -31,6 +31,7 @@
     price: '',
     vegan: false,
     glutenFree: false,
+    category: '',
     soldOut: true,
     details: '',
   });
@@ -85,7 +86,7 @@
           return { type: 'news', title: c.title.trim(), excerpt: c.excerpt.trim(), body: c.body.trim() };
         case 'menu-add': {
           const tags = [c.vegan && 'vegan', c.glutenFree && 'gluten-free'].filter(Boolean);
-          return { type: 'menu-add', name: c.name.trim(), description: c.description.trim(), price: c.price.trim(), tags };
+          return { type: 'menu-add', name: c.name.trim(), description: c.description.trim(), price: c.price.trim(), tags, category: c.category.trim() };
         }
         case 'menu-price':
           return { type: 'menu-price', name: c.name.trim(), price: c.price.trim() };
@@ -220,6 +221,10 @@
               <label for="r-description-{i}">Description</label>
               <textarea id="r-description-{i}" rows="2" bind:value={change.description}></textarea>
             </div>
+            <div class="field">
+              <label for="r-category-{i}">Menu section <span class="optional">(optional)</span></label>
+              <input id="r-category-{i}" placeholder="Lunch" bind:value={change.category} />
+            </div>
             <div class="checks">
               <label><input type="checkbox" bind:checked={change.vegan} /> Vegan</label>
               <label><input type="checkbox" bind:checked={change.glutenFree} /> Gluten-free</label>
@@ -276,6 +281,10 @@
   label,
   .label {
     font-weight: 600;
+  }
+  .optional {
+    font-weight: 400;
+    color: var(--soft);
   }
   .hint {
     margin: 0;

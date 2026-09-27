@@ -3,7 +3,8 @@
   // like the contact form. Besides the readable answers, it attaches the same
   // details as one line of JSON between markers, which the starter's
   // scripts/onboard.js turns into the client's site. Add-ons Cameron agreed
-  // with them come from the link, e.g. onboarding.html?modules=food.
+  // with them come from the link, e.g. onboarding.html?modules=food (add
+  // &preorder=1 for ordering ahead for pickup).
   import { onMount } from 'svelte';
   import { site } from '../site.config';
   import { themes, modules as knownModules } from '../data/themes';
@@ -23,6 +24,8 @@
   let notes = $state('');
   let botcheck = $state(false);
   let modules = $state<string[]>([]);
+  // Weekend-style ordering ahead for pickup, switched on with &preorder=1 in the link.
+  let preOrder = $state(false);
   // Five short steps instead of one long form. Each step checks only its own
   // answers before moving on; all answers stay in memory until the last step.
   const steps = [
@@ -40,6 +43,7 @@
   onMount(() => {
     const asked = new URLSearchParams(location.search).get('modules') ?? '';
     modules = asked.split(',').map((m) => m.trim()).filter((m) => knownModules.includes(m));
+    preOrder = modules.includes('food') && new URLSearchParams(location.search).get('preorder') === '1';
   });
 
   const filledHours = $derived(hours.filter((row) => row.days.trim() && row.times.trim()));
@@ -82,6 +86,7 @@
       enquiryTypes: enquiryTypes.split('\n').map((line) => line.trim()).filter(Boolean),
       theme,
       modules,
+      preOrder,
       contact: { email: email.trim(), phone: phone.trim() },
     };
   }
