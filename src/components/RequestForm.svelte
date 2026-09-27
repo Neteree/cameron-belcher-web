@@ -1,23 +1,30 @@
 <script lang="ts">
-  // Change requests from existing clients. Sends through Web3Forms like the
-  // other forms, with the changes attached as one line of JSON between
-  // ---CHANGES-JSON--- markers in the shape the starter's
-  // scripts/apply-changes.js takes. Nothing happens until the client confirms
+  // Change requests from existing clients, sent through lib/send.ts like the
+  // other forms, as changes in the shape the starter's scripts/apply-changes.js
+  // takes (new photos go to the intake and point at their upload by number). Nothing happens until the client confirms
   // from their saved email address and Cameron approves the price.
   import { site } from '../site.config';
-  import { send } from '../lib/send';
+  import { send, canUpload } from '../lib/send';
+  import { themes } from '../data/themes';
+  import PhotoPicker, { type ExistingPhoto } from './PhotoPicker.svelte';
 
-  type Kind = 'text' | 'hours' | 'news' | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out' | 'other';
+  type Kind = 'text' | 'hours' | 'news' | 'photos' | 'theme' | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out' | 'other';
   const kinds: { id: Kind; label: string }[] = [
     { id: 'text', label: 'Change some wording' },
     { id: 'hours', label: 'Update opening hours' },
     { id: 'news', label: 'Post news or a special' },
+    // Photos can only be sent through the intake.
+    ...(canUpload ? [{ id: 'photos' as Kind, label: 'Change your photos' }] : []),
+    { id: 'theme', label: 'Change the look' },
     { id: 'menu-add', label: 'Add a menu item' },
     { id: 'menu-price', label: 'Change a price on the menu' },
     { id: 'menu-remove', label: 'Remove a menu item' },
     { id: 'menu-sold-out', label: 'Mark a menu item sold out (or back on)' },
-    { id: 'other', label: 'Something else, like a new photo or section' },
+    { id: 'other', label: canUpload ? 'Something else, like a new section' : 'Something else, like a new photo or section' },
   ];
+  const MAX_PHOTOS = 12;
+  const MAX_BYTES = 15 * 1024 * 1024;
+  const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
   const blank = () => ({
     kind: 'text' as Kind,
@@ -35,6 +42,34 @@
     category: '',
     soldOut: true,
     details: '',
+    photos: [] as File[],
+    photoDescriptions: [] as string[],
+    theme: '',
+  });
+
+  // The client's current gallery, when the link names their site
+  // (request.html?site=https://their-site.pages.dev): each site publishes photos.json.
+  let existing = $state<ExistingPhoto[]>([]);
+  const PLACEHOLDER = '[PLACEHOLDER';
+  $effect(() => {
+    const given = new URLSearchParams(location.search).get('site');
+    let siteUrl: URL;
+    try {
+      siteUrl = new URL(given ?? '');
+    } catch {
+      return;
+    }
+    if (siteUrl.protocol !== 'https:' && siteUrl.hostname !== 'localhost') return;
+    fetch(new URL('photos.json', siteUrl.href.replace(/\/?$/, '/')))
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!Array.isArray(data?.gallery)) return;
+        existing = data.gallery.map((item: { file: string; src: string; alt: string }) => {
+          const alt = item.alt.startsWith(PLACEHOLDER) ? '' : item.alt;
+          return { file: item.file, src: new URL(item.src, siteUrl).href, original: alt, alt, removed: false };
+        });
+      })
+      .catch(() => {});
   });
 
   let email = $state('');
@@ -63,21 +98,38 @@
       case 'menu-remove':
       case 'menu-sold-out':
         return c.name.trim() ? '' : 'Fill in the item name, exactly as it is on the menu.';
+      case 'photos': {
+        const touched = existing.some((p) => p.removed || p.alt.trim() !== p.original);
+        if (!c.photos.length && !(firstPhotos(c) && touched)) return existing.length ? 'Add, remove or re-describe at least one photo.' : 'Choose at least one photo.';
+        const wrong = c.photos.find((file) => !IMAGE_TYPES.includes(file.type));
+        if (wrong) return `“${wrong.name}” isn’t a JPG, PNG or WebP photo.`;
+        const big = c.photos.find((file) => file.size > MAX_BYTES);
+        return big ? `“${big.name}” is too big. Photos can be up to 15 MB each.` : '';
+      }
+      case 'theme':
+        return c.theme ? '' : 'Choose a look.';
       default:
         return c.details.trim() ? '' : 'Describe what you’d like changed.';
     }
   }
 
+  const allPhotos = $derived(changes.flatMap((c) => (c.kind === 'photos' ? c.photos : [])));
   const errors = $derived({
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'Enter the email address I have for you.',
     business: business.trim() ? '' : 'Enter your business name.',
     changes: changes.map(problem),
+    photos: allPhotos.length > MAX_PHOTOS ? `Please send up to ${MAX_PHOTOS} photos at a time.` : '',
   });
-  const valid = $derived(!errors.email && !errors.business && errors.changes.every((e) => !e));
+  const valid = $derived(!errors.email && !errors.business && !errors.photos && errors.changes.every((e) => !e));
+
+  /** The site's current photos are shown (and changed) in the first photo change only. */
+  const firstPhotos = (c: Change) => changes.find((other) => other.kind === 'photos') === c;
 
   /** The changes in the shape scripts/apply-changes.js takes. */
   function toChanges() {
-    return changes.map((c) => {
+    // Uploaded photos are sent as one list; each photo change points at its place in it.
+    let upload = 0;
+    return changes.flatMap((c) => {
       switch (c.kind) {
         case 'text':
           return { type: 'text', current: c.current.trim(), new: c.replacement.trim() };
@@ -95,6 +147,20 @@
           return { type: 'menu-remove', name: c.name.trim() };
         case 'menu-sold-out':
           return { type: 'menu-sold-out', name: c.name.trim(), soldOut: c.soldOut };
+        case 'photos': {
+          const current = firstPhotos(c) ? existing : [];
+          return [
+            ...current.filter((p) => p.removed).map((p) => ({ type: 'gallery-remove', file: p.file })),
+            ...current
+              .filter((p) => !p.removed && p.alt.trim() && p.alt.trim() !== p.original)
+              .map((p) => ({ type: 'gallery-describe', file: p.file, alt: p.alt.trim() })),
+            ...(c.photos.length
+              ? [{ type: 'gallery-add', photos: c.photos.map((_, j) => ({ upload: upload++, alt: (c.photoDescriptions[j] ?? '').trim() })) }]
+              : []),
+          ];
+        }
+        case 'theme':
+          return { type: 'theme', theme: c.theme };
         default:
           return { type: 'other', details: c.details.trim() };
       }
@@ -118,6 +184,7 @@
         fields: { email: request.email, business: request.business },
         payload: request,
         block: 'CHANGES',
+        photos: canUpload ? allPhotos : [],
         botcheck,
       });
       status = 'sent';
@@ -200,10 +267,28 @@
             <label for="r-body-{i}">The post</label>
             <textarea id="r-body-{i}" rows="4" bind:value={change.body}></textarea>
           </div>
+        {:else if change.kind === 'photos'}
+          <div class="field">
+            <span class="label">Your photos</span>
+            {#if firstPhotos(change)}
+              <PhotoPicker label="photos" bind:photos={change.photos} bind:descriptions={change.photoDescriptions} bind:existing />
+            {:else}
+              <PhotoPicker label="photos" bind:photos={change.photos} bind:descriptions={change.photoDescriptions} />
+            {/if}
+          </div>
+        {:else if change.kind === 'theme'}
+          <div class="field">
+            <label for="r-theme-{i}">New look</label>
+            <select id="r-theme-{i}" bind:value={change.theme}>
+              <option value="" disabled>Choose one</option>
+              {#each themes as option (option.id)}<option value={option.id}>{option.name}</option>{/each}
+            </select>
+            <p class="hint">{themes.find((option) => option.id === change.theme)?.text ?? 'The colours and fonts of your whole site.'}</p>
+          </div>
         {:else if change.kind === 'other'}
           <div class="field">
             <label for="r-details-{i}">What would you like?</label>
-            <p class="hint" id="r-details-hint-{i}">For a new photo, say where it goes and email me the photo.</p>
+            <p class="hint" id="r-details-hint-{i}">{canUpload ? 'Say what you’d like and where it goes on the page.' : 'For a new photo, say where it goes and email me the photo.'}</p>
             <textarea id="r-details-{i}" rows="4" bind:value={change.details} aria-describedby="r-details-hint-{i}"></textarea>
           </div>
         {:else}
@@ -247,6 +332,7 @@
     {/each}
 
     <button class="small add" type="button" onclick={() => changes.push(blank())}>Add another change</button>
+    {#if tried && errors.photos}<p class="error">{errors.photos}</p>{/if}
 
     <input class="botcheck" type="checkbox" tabindex="-1" aria-hidden="true" bind:checked={botcheck} />
     <button class="button" type="submit" disabled={status === 'sending'}>
