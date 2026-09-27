@@ -31,6 +31,12 @@
   const logo = $derived(logos[0] ?? null);
   let photos = $state<File[]>([]);
   let photoDescriptions = $state<string[]>([]);
+  // 'new:<index>' for the photo they picked to go beside their headline, or null.
+  let mainPhoto = $state<string | null>(null);
+  let address = $state('');
+  let sitePhone = $state('');
+  let instagram = $state('');
+  let facebook = $state('');
   let failure = $state('');
   const MAX_PHOTOS = 12;
   const MAX_BYTES = 15 * 1024 * 1024;
@@ -104,6 +110,10 @@
       headline: headline.trim(),
       standout: standout.trim(),
       visit: visit.trim(),
+      address: address.trim(),
+      sitePhone: sitePhone.trim(),
+      instagram: instagram.trim(),
+      facebook: facebook.trim(),
       hours,
       enquiryTypes: enquiryTypes.split('\n').map((line) => line.trim()).filter(Boolean),
       theme,
@@ -112,6 +122,8 @@
       contact: { email: email.trim(), phone: phone.trim() },
       // One per uploaded photo, in the same order; blank ones become a placeholder to fill in.
       photoDescriptions: canUpload ? photos.map((_, i) => (photoDescriptions[i] ?? '').trim()) : [],
+      // Which of those photos goes beside the headline (-1 for none).
+      heroPhoto: canUpload && mainPhoto?.startsWith('new:') ? Number(mainPhoto.slice(4)) : -1,
     };
   }
 
@@ -229,6 +241,26 @@
         {#if tried[2] && errors.hours}<p class="error">{errors.hours}</p>{/if}
       </div>
       <div class="field">
+        <label for="o-address">Street address for a map link <span class="optional">(optional)</span></label>
+        <p class="hint" id="o-address-hint">Like “12 Main Road, Green Bay, Auckland”. Leave it blank if customers don’t come to you.</p>
+        <input id="o-address" bind:value={address} aria-describedby="o-address-hint" />
+      </div>
+      <div class="field">
+        <label for="o-site-phone">Phone number for customers <span class="optional">(optional)</span></label>
+        <p class="hint" id="o-site-phone-hint">Shown on your site so people can tap to call. Leave it blank to keep your number off the site.</p>
+        <input id="o-site-phone" type="tel" autocomplete="tel" bind:value={sitePhone} aria-describedby="o-site-phone-hint" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="o-instagram">Instagram <span class="optional">(optional)</span></label>
+          <input id="o-instagram" placeholder="@yourbusiness" bind:value={instagram} />
+        </div>
+        <div class="field">
+          <label for="o-facebook">Facebook page <span class="optional">(optional)</span></label>
+          <input id="o-facebook" placeholder="facebook.com/yourbusiness" bind:value={facebook} />
+        </div>
+      </div>
+      <div class="field">
         <label for="o-enquiries">What customers usually contact you about <span class="optional">(optional)</span></label>
         <p class="hint" id="o-enquiries-hint">One per line, like “A quote” or “Booking a table”. These become choices on your enquiry form.</p>
         <textarea id="o-enquiries" rows="3" bind:value={enquiryTypes} aria-describedby="o-enquiries-hint"></textarea>
@@ -256,7 +288,8 @@
           <span class="label">Your logo</span>
           <PhotoPicker label="logo" bind:photos={logos} max={1} describe={false} />
           <span class="label">Your photos</span>
-          <PhotoPicker label="photos" bind:photos bind:descriptions={photoDescriptions} />
+          <p class="hint">Pick your best one as the main photo: it goes beside your headline.</p>
+          <PhotoPicker label="photos" bind:photos bind:descriptions={photoDescriptions} pickMain autoMain bind:main={mainPhoto} noMainLabel="No main photo (use a simple drawing instead)" />
           {#if tried[3] && errors.photos}<p class="error" role="alert">{errors.photos}</p>{/if}
         {:else}
           <p class="hint">After you send this, email me your logo and any photos you’d like on the site.</p>
@@ -266,7 +299,7 @@
 
     <fieldset hidden={step !== 4}>
       <legend class="visually-hidden">Contact details for me</legend>
-      <p class="hint">Only I see these. They aren’t shown on your site.</p>
+      <p class="hint">Only I see these. They aren’t shown on your site (the customer phone number earlier is).</p>
       <div class="row">
         <div class="field">
           <label for="o-email">Your email</label>
@@ -274,7 +307,7 @@
           {#if tried[4] && errors.email}<p class="error" id="o-email-err">{errors.email}</p>{/if}
         </div>
         <div class="field">
-          <label for="o-phone">Phone <span class="optional">(optional)</span></label>
+          <label for="o-phone">Your phone <span class="optional">(optional)</span></label>
           <input id="o-phone" type="tel" autocomplete="tel" bind:value={phone} />
         </div>
       </div>
