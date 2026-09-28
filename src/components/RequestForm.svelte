@@ -8,9 +8,17 @@
   import { themes } from '../data/themes';
   import PhotoPicker, { type ExistingPhoto } from './PhotoPicker.svelte';
   import HoursPicker from './HoursPicker.svelte';
+  import PriceFields, { priceChanges, priceProblem } from './PriceFields.svelte';
 
-  type Kind = 'text' | 'hours' | 'contact' | 'news' | 'photos' | 'theme' | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out' | 'other';
-  const kinds: { id: Kind; label: string }[] = [
+  type Kind =
+    | 'text' | 'hours' | 'contact' | 'news' | 'photos' | 'theme'
+    | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out'
+    | 'price-add' | 'price-change' | 'price-remove' | 'price-available' | 'price-note'
+    | 'other';
+  // Changes that belong to an add-on module only show when the client's site
+  // has it (from its photos.json), or always when the form doesn't know the site.
+  const moduleOf = (kind: Kind) => (kind.startsWith('menu-') ? 'food' : kind.startsWith('price') ? 'prices' : null);
+  const allKinds: { id: Kind; label: string }[] = [
     { id: 'text', label: 'Change some wording' },
     { id: 'hours', label: 'Update opening hours' },
     { id: 'contact', label: 'Update your phone, address or social links' },
@@ -22,8 +30,16 @@
     { id: 'menu-price', label: 'Change a price on the menu' },
     { id: 'menu-remove', label: 'Remove a menu item' },
     { id: 'menu-sold-out', label: 'Mark a menu item sold out (or back on)' },
+    { id: 'price-add', label: 'Add something to your price list' },
+    { id: 'price-change', label: 'Change a price on your price list' },
+    { id: 'price-remove', label: 'Remove something from your price list' },
+    { id: 'price-available', label: 'Hide something on your price list for now (or show it again)' },
+    { id: 'price-note', label: 'Change the note under your price list' },
     { id: 'other', label: canUpload ? 'Something else, like a new section' : 'Something else, like a new photo or section' },
   ];
+  let siteModules = $state<string[] | null>(null);
+  let priceItems = $state<{ name: string; available: boolean }[]>([]);
+  const kinds = $derived(allKinds.filter((kind) => !siteModules || !moduleOf(kind.id) || siteModules.includes(moduleOf(kind.id)!)));
   const MAX_PHOTOS = 12;
   const MAX_BYTES = 15 * 1024 * 1024;
   const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -53,6 +69,14 @@
     instagram: '',
     facebook: '',
     theme: '',
+    // Price list changes (see PriceFields.svelte).
+    pricing: 'one' as 'one' | 'from' | 'sizes' | 'ask',
+    sizes: [{ label: '', price: '' }],
+    available: false,
+    footnote: '',
+    itemPhoto: '',
+    itemPhotoFile: [] as File[],
+    itemPhotoAlt: '',
   });
 
   // The client's current gallery, when the link names their site
@@ -72,6 +96,8 @@
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (!Array.isArray(data?.gallery)) return;
+        if (Array.isArray(data.modules)) siteModules = data.modules;
+        if (Array.isArray(data.prices)) priceItems = data.prices;
         existing = data.gallery.map((item: { file: string; src: string; alt: string }) => {
           const alt = item.alt.startsWith(PLACEHOLDER) ? '' : item.alt;
           return { file: item.file, src: new URL(item.src, siteUrl).href, original: alt, alt, removed: false };
@@ -118,12 +144,26 @@
       }
       case 'theme':
         return c.theme ? '' : 'Choose a look.';
+      case 'price-add':
+      case 'price-change':
+      case 'price-remove':
+      case 'price-available':
+      case 'price-note': {
+        const missing = priceProblem(c);
+        if (missing) return missing;
+        const file = c.itemPhoto === 'new' ? c.itemPhotoFile[0] : null;
+        if (file && !IMAGE_TYPES.includes(file.type)) return `“${file.name}” isn’t a JPG, PNG or WebP photo.`;
+        return file && file.size > MAX_BYTES ? `“${file.name}” is too big. Photos can be up to 15 MB each.` : '';
+      }
       default:
         return c.details.trim() ? '' : 'Describe what you’d like changed.';
     }
   }
 
-  const allPhotos = $derived(changes.flatMap((c) => (c.kind === 'photos' ? c.photos : [])));
+  // Every photo to upload, in the order toChanges() numbers them.
+  const uploadsOf = (c: Change) =>
+    c.kind === 'photos' ? c.photos : (c.kind === 'price-add' || c.kind === 'price-change') && c.itemPhoto === 'new' ? c.itemPhotoFile : [];
+  const allPhotos = $derived(changes.flatMap(uploadsOf));
   const errors = $derived({
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'Enter the email address I have for you.',
     business: business.trim() ? '' : 'Enter your business name.',
@@ -184,6 +224,12 @@
         }
         case 'theme':
           return { type: 'theme', theme: c.theme };
+        case 'price-add':
+        case 'price-change':
+        case 'price-remove':
+        case 'price-available':
+        case 'price-note':
+          return priceChanges(c, () => upload++);
         default:
           return { type: 'other', details: c.details.trim() };
       }
@@ -320,6 +366,8 @@
             </select>
             <p class="hint">{themes.find((option) => option.id === change.theme)?.text ?? 'The colours and fonts of your whole site.'}</p>
           </div>
+        {:else if change.kind.startsWith('price')}
+          <PriceFields bind:change={changes[i]} {i} items={priceItems} gallery={existing.filter((p) => !p.removed)} {canUpload} />
         {:else if change.kind === 'other'}
           <div class="field">
             <label for="r-details-{i}">What would you like?</label>
