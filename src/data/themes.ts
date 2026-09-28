@@ -9,4 +9,4 @@ export const themes = [
 ];
 
 /** Add-on modules the starter has. Cameron adds them to the onboarding link, e.g. ?modules=food. */
-export const modules = ['food'];
+export const modules = ['food', 'prices'];
