@@ -14,10 +14,12 @@
     | 'text' | 'hours' | 'contact' | 'news' | 'photos' | 'theme'
     | 'menu-add' | 'menu-price' | 'menu-remove' | 'menu-sold-out'
     | 'price-add' | 'price-change' | 'price-remove' | 'price-available' | 'price-note'
+    | 'booking'
     | 'other';
   // Changes that belong to an add-on module only show when the client's site
   // has it (from its photos.json), or always when the form doesn't know the site.
-  const moduleOf = (kind: Kind) => (kind.startsWith('menu-') ? 'food' : kind.startsWith('price') ? 'prices' : null);
+  const moduleOf = (kind: Kind) =>
+    kind.startsWith('menu-') ? 'food' : kind.startsWith('price') ? 'prices' : kind === 'booking' ? 'booking' : null;
   const allKinds: { id: Kind; label: string }[] = [
     { id: 'text', label: 'Change some wording' },
     { id: 'hours', label: 'Update opening hours' },
@@ -35,6 +37,7 @@
     { id: 'price-remove', label: 'Remove something from your price list' },
     { id: 'price-available', label: 'Hide something on your price list for now (or show it again)' },
     { id: 'price-note', label: 'Change the note under your price list' },
+    { id: 'booking', label: 'Change what people can book (or the kinds of job you quote for)' },
     { id: 'other', label: canUpload ? 'Something else, like a new section' : 'Something else, like a new photo or section' },
   ];
   let siteModules = $state<string[] | null>(null);
@@ -77,6 +80,8 @@
     itemPhoto: '',
     itemPhotoFile: [] as File[],
     itemPhotoAlt: '',
+    // Booking or quote form choices, one per line.
+    bookingOptions: '',
   });
 
   // The client's current gallery, when the link names their site
@@ -144,6 +149,8 @@
       }
       case 'theme':
         return c.theme ? '' : 'Choose a look.';
+      case 'booking':
+        return c.bookingOptions.split('\n').some((line) => line.trim()) ? '' : 'List at least one choice.';
       case 'price-add':
       case 'price-change':
       case 'price-remove':
@@ -224,6 +231,8 @@
         }
         case 'theme':
           return { type: 'theme', theme: c.theme };
+        case 'booking':
+          return { type: 'booking', options: c.bookingOptions.split('\n').map((line) => line.trim()).filter(Boolean) };
         case 'price-add':
         case 'price-change':
         case 'price-remove':
@@ -368,6 +377,12 @@
           </div>
         {:else if change.kind.startsWith('price')}
           <PriceFields bind:change={changes[i]} {i} items={priceItems} gallery={existing.filter((p) => !p.removed)} {canUpload} />
+        {:else if change.kind === 'booking'}
+          <div class="field">
+            <label for="r-booking-{i}">All the choices, one per line</label>
+            <p class="hint" id="r-booking-hint-{i}">Like “Haircut”, “Beard trim” or “Hot water repairs”. These replace the current list.</p>
+            <textarea id="r-booking-{i}" rows="5" bind:value={change.bookingOptions} aria-describedby="r-booking-hint-{i}"></textarea>
+          </div>
         {:else if change.kind === 'other'}
           <div class="field">
             <label for="r-details-{i}">What would you like?</label>

@@ -4,7 +4,7 @@
   // details as one line of JSON between markers, which the starter's
   // scripts/onboard.js turns into the client's site. Add-ons Cameron agreed
   // with them come from the link, e.g. onboarding.html?modules=food (add
-  // &preorder=1 for ordering ahead for pickup).
+  // &preorder=1 for ordering ahead for pickup), or ?modules=booking&quote=1.
   import { onMount } from 'svelte';
   import { site } from '../site.config';
   import { themes, modules as knownModules } from '../data/themes';
@@ -44,6 +44,8 @@
   let modules = $state<string[]>([]);
   // Weekend-style ordering ahead for pickup, switched on with &preorder=1 in the link.
   let preOrder = $state(false);
+  // A quote form instead of bookings, switched on with &quote=1 in the link.
+  let quote = $state(false);
   // Five short steps instead of one long form. Each step checks only its own
   // answers before moving on; all answers stay in memory until the last step.
   const steps = [
@@ -62,6 +64,7 @@
     const asked = new URLSearchParams(location.search).get('modules') ?? '';
     modules = asked.split(',').map((m) => m.trim()).filter((m) => knownModules.includes(m));
     preOrder = modules.includes('food') && new URLSearchParams(location.search).get('preorder') === '1';
+    quote = modules.includes('booking') && new URLSearchParams(location.search).get('quote') === '1';
   });
 
   const errors = $derived({
@@ -119,6 +122,7 @@
       theme,
       modules,
       preOrder,
+      quote,
       contact: { email: email.trim(), phone: phone.trim() },
       // One per uploaded photo, in the same order; blank ones become a placeholder to fill in.
       photoDescriptions: canUpload ? photos.map((_, i) => (photoDescriptions[i] ?? '').trim()) : [],
