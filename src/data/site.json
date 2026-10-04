@@ -1,8 +1,8 @@
 {
   "heroNote": "websites for local businesses",
   "heroLink": {
-    "label": "",
-    "href": ""
+    "label": "Get started",
+    "href": "start.html"
   },
   "address": "",
   "phone": "",
@@ -24,14 +24,18 @@
     "askBusiness": true,
     "thanks": "Your enquiry is on its way. I'll get back to you soon.",
     "title": "Get in touch",
-    "intro": "Tell me a little about your business and I’ll get back to you to set up a free, no-pressure chat.",
+    "intro": "A new website, a change to yours, or just a question: it all starts here, and takes a few minutes.",
     "options": [
       "A new website",
       "A new site to replace an old one",
       "Online orders or bookings",
       "A game or something playful",
       "Not sure yet, let's chat"
-    ]
+    ],
+    "link": {
+      "label": "Get started",
+      "href": "start.html"
+    }
   },
   "theme": "studio",
   "url": "https://cameron-belcher-web.pages.dev",
