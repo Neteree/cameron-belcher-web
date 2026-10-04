@@ -1,40 +1,19 @@
 ---
-// Private page, linked only from emails: not in the menu and kept out of
-// search engines. The wording is in src/modules/onboarding/onboarding.json.
-import Base from '../layouts/Base.astro';
-import SectionHead from '../components/SectionHead.svelte';
-import OnboardingForm from '../modules/onboarding/OnboardingForm.svelte';
-import page from '../modules/onboarding/onboarding.json';
-import { site } from '../site.config';
+// The old onboarding link now goes to the one Get started form, keeping what the
+// link asked for (add-ons, or the client's site).
+const title = 'Moved to Get started';
 ---
 
-<Base title={`${page.title} · ${site.name}`} description={page.title} noindex>
-  <main class="private-page">
-    <SectionHead level={1} note={page.note} title={page.title} intro={page.intro} />
-    <div class="form-card">
-      <OnboardingForm client:load />
-    </div>
-  </main>
-</Base>
-
-<style>
-  .private-page {
-    max-width: 46rem;
-    padding-block: clamp(2rem, 6vw, 4rem);
-  }
-
-  .private-page :global(.section-head) {
-    margin-bottom: 2rem;
-  }
-
-  .private-page :global(h1) {
-    font-size: clamp(2.2rem, 6vw, 3.4rem);
-  }
-
-  .form-card {
-    border: 2px solid var(--ink);
-    border-radius: 1.25rem;
-    padding: clamp(1.25rem, 4vw, 2.25rem);
-    box-shadow: 8px 8px 0 var(--accent);
-  }
-</style>
+<!doctype html>
+<html lang="en-NZ">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{title}</title>
+    <script is:inline>location.replace('start.html' + (location.search ? location.search + '&' : '?') + 'path=new');</script>
+  </head>
+  <body>
+    <p>This page has moved: <a href="start.html?path=new">Get started</a>.</p>
+  </body>
+</html>
