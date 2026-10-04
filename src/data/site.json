@@ -1,0 +1,56 @@
+{
+  "heroNote": "websites for local businesses",
+  "heroLink": {
+    "label": "",
+    "href": ""
+  },
+  "address": "",
+  "phone": "",
+  "heroPhoto": {
+    "file": "cafe.jpg",
+    "alt": "A café website built with the same setup client sites use"
+  },
+  "logo": null,
+  "gallery": [],
+  "name": "Cameron Belcher",
+  "suburb": "Auckland",
+  "city": "New Zealand",
+  "description": "Fast, good-looking websites for Auckland small businesses, with no monthly fees. Pay once for the build, then only for the changes you ask for.",
+  "heroTitle": "Websites that bring local customers through the door.",
+  "heroText": "I design and build fast, good-looking websites for small businesses around Auckland. No monthly fees: pay once for the build, then only for the changes you ask for.",
+  "visitText": "",
+  "hours": [],
+  "enquiry": {
+    "askBusiness": true,
+    "thanks": "Your enquiry is on its way. I'll get back to you soon.",
+    "title": "Get in touch",
+    "intro": "Tell me a little about your business and I’ll get back to you to set up a free, no-pressure chat.",
+    "options": [
+      "A new website",
+      "A new site to replace an old one",
+      "Online orders or bookings",
+      "A game or something playful",
+      "Not sure yet, let's chat"
+    ]
+  },
+  "theme": "studio",
+  "url": "https://cameron-belcher-web.pages.dev",
+  "formKey": "f508dcc9-6877-487b-b5fd-63604d81d547",
+  "intakeUrl": "https://cameron-belcher-intake.neteree.workers.dev",
+  "sections": [
+    "highlights",
+    "work",
+    "prices",
+    "steps",
+    "faq"
+  ],
+  "demo": false,
+  "social": {
+    "instagram": "",
+    "facebook": ""
+  },
+  "notice": {
+    "text": "",
+    "until": ""
+  }
+}

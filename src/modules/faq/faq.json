@@ -1,0 +1,29 @@
+{
+  "section": {
+    "note": "FAQ",
+    "title": "Questions people ask",
+    "nav": "FAQ"
+  },
+  "questions": [
+    {
+      "question": "Do I own my website?",
+      "answer": "Yes. Your domain, words and photos are yours. If you ever leave, you get a full copy of your site."
+    },
+    {
+      "question": "Can I change things myself?",
+      "answer": "Yes, if you add the news editor, you can post news and specials yourself. For anything else, just send me a message and I’ll do it."
+    },
+    {
+      "question": "Why not Wix, Squarespace or WordPress?",
+      "answer": "They’re fine for some people, but they take your time to set up and maintain, and often end up slow. My sites are custom and fast, and I make the changes for you when you need them."
+    },
+    {
+      "question": "Are there any ongoing costs?",
+      "answer": "Only your domain name, usually around $30 a year, paid straight to the registrar. Hosting is free and set up in your name, and there’s no monthly fee to me."
+    },
+    {
+      "question": "How do changes work?",
+      "answer": "Send me what you’d like changed. Small changes are a fixed price; anything bigger gets a quote before I start, so there are no surprises."
+    }
+  ]
+}

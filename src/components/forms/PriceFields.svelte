@@ -191,7 +191,7 @@
   .hint {
     margin: 0;
     font-size: 0.92rem;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   input:not([type='radio']):not([type='checkbox']),
   select {
@@ -265,14 +265,14 @@
     border: 3px solid transparent;
   }
   .thumb input:checked + img {
-    border-color: var(--green);
+    border-color: var(--accent);
   }
   .thumb input:focus-visible + img {
-    outline: 3px solid var(--gold);
+    outline: 3px solid var(--highlight);
     outline-offset: 2px;
   }
   .optional {
     font-weight: 400;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
 </style>

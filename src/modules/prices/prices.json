@@ -1,0 +1,68 @@
+{
+  "demoPrices": false,
+  "section": {
+    "note": "Pricing",
+    "title": "Start small. Add as you grow.",
+    "intro": "One simple site to start, with extras you can add now or later. After launch, you only pay for the changes you ask for. Prices in NZD.",
+    "footnote": "Money tight right now? Get in touch anyway. We can split the cost into smaller payments or start with the basics and add to it later.",
+    "askText": "Quoted",
+    "nav": "Pricing"
+  },
+  "items": [
+    {
+      "id": "website",
+      "name": "Your website",
+      "category": "Start here",
+      "price": 150,
+      "description": "A polished one-page site that tells people who you are and how to reach you: one-page custom design, enquiry form, Google Business Profile and local search basics, launched on your own domain, free hosting set up in your name."
+    },
+    {
+      "id": "extra-page",
+      "name": "Extra page",
+      "category": "Add what you need, now or later",
+      "price": 40,
+      "description": "About, services, gallery, or anything else. Priced per page."
+    },
+    {
+      "id": "menu",
+      "name": "Menu or product list",
+      "category": "Add what you need, now or later",
+      "price": 60,
+      "description": "Your menu, services or products with prices."
+    },
+    {
+      "id": "booking",
+      "name": "Booking or quote form",
+      "category": "Add what you need, now or later",
+      "price": 60,
+      "description": "Customers send a booking or quote request straight to you."
+    },
+    {
+      "id": "news",
+      "name": "News you edit yourself",
+      "category": "Add what you need, now or later",
+      "price": 80,
+      "description": "Post news, specials or updates from a simple editor."
+    },
+    {
+      "id": "orders",
+      "name": "Online orders",
+      "category": "Add what you need, now or later",
+      "price": 350,
+      "description": "Orders, pre-orders or payments through Stripe, set up in your name."
+    },
+    {
+      "id": "small-change",
+      "name": "Small change",
+      "category": "After launch: pay per request",
+      "price": 20,
+      "description": "Text, photos, prices, opening hours or a menu update."
+    },
+    {
+      "id": "bigger-job",
+      "name": "Bigger job",
+      "category": "After launch: pay per request",
+      "description": "A redesign or something not listed above. Quoted up front."
+    }
+  ]
+}

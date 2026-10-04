@@ -1,0 +1,31 @@
+---
+// Price list section shell, added to the home page by the starter: prepares
+// the items (shown price, optimised photos) for PriceList.svelte. No JavaScript.
+import PriceList from './PriceList.svelte';
+import { demoPrices, items, priceText, section } from './prices';
+import { picture } from '../../lib/images';
+import { site } from '../../site.config';
+
+const shown = await Promise.all(
+  items.map(async (item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    category: item.category,
+    price: priceText(item),
+    image: item.photo ? await picture(item.photo.file, item.photo.alt, [400, 800], '(max-width: 40rem) 100vw, 25vw') : null,
+  })),
+);
+---
+
+{shown.length > 0 && (
+  <section id="prices" class="section">
+    <div class="section-head">
+      <p class="hand-note">{section.note}</p>
+      <h2>{section.title}</h2>
+      {section.intro && <p class="intro">{section.intro}</p>}
+    </div>
+    {demoPrices && !site.demo && <p class="intro">[PLACEHOLDER: the client's real prices go in src/modules/prices/prices.json]</p>}
+    <PriceList items={shown} footnote={section.footnote} />
+  </section>
+)}

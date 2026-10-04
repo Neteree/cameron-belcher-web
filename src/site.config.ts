@@ -1,58 +1,64 @@
-// Everything about the business in one place. Prices are examples: change
-// them here and the whole site updates.
+// The site's details, typed. The details themselves live in src/data/site.json:
+// the new-client script writes it and the change scripts edit it, so pages
+// never hard-code anything a client might change. Never invent details:
+// leave [PLACEHOLDER: ...] and ask.
+import data from './data/site.json';
 
-export const site = {
-  name: 'Cameron Belcher',
-  role: 'Websites for local businesses',
-  city: 'Auckland',
-  country: 'New Zealand',
-  timezone: 'Pacific/Auckland',
-  description:
-    'Fast, good-looking websites for Auckland small businesses, with no monthly fees. Pay once for the build, then only for the changes you ask for.',
+export interface Site {
+  name: string;
+  suburb: string;
+  city: string;
+  /** One sentence for search results. */
+  description: string;
+  /** Optional few words shown after the location, e.g. 'family run since 1998'. */
+  heroNote: string;
+  heroTitle: string;
+  heroText: string;
+  /** Optional main button beside the headline, e.g. { label: 'Play now', href: 'lantern.html' }. Blank goes to the enquiry form. */
+  heroLink: { label: string; href: string };
+  /** Optional photo beside the headline: a file in src/assets/photos/ and its description. */
+  heroPhoto: { file: string; alt: string } | null;
+  /** Optional logo shown in the header instead of the name: a file in src/assets/photos/. */
+  logo: { file: string } | null;
+  /** Photos for the gallery section, in order. The section only shows once there's at least one. */
+  gallery: { file: string; alt: string }[];
+  visitText: string;
+  /** Optional street address for a map link, e.g. '12 Main Road, Green Bay, Auckland'. Blank hides the link. */
+  address: string;
+  /** Optional public phone number shown on the site as a tap-to-call link. Blank hides it. */
+  phone: string;
+  /** Optional social pages, as full links. Blank ones are hidden. */
+  social: { instagram: string; facebook: string };
+  /** Opening hours. Empty hides them (e.g. a business people don't visit). */
+  hours: { days: string; times: string }[];
   /**
-   * The live address, e.g. 'https://example.co.nz' (no trailing slash). Link
-   * previews on Facebook and in messages need it to show the share image.
+   * The enquiry form. `askBusiness` adds a "Your business" field; `thanks` is shown once
+   * it's sent (blank for the usual wording).
    */
-  url: 'https://cameron-belcher-web.pages.dev' as string | null,
+  enquiry: { title: string; intro: string; options: string[]; askBusiness: boolean; thanks: string };
+  /** Look preset from src/themes.ts: bold, classic, calm or warm. */
+  theme: string;
+  /** Web3Forms access key (web3forms.com), tied to the inbox it emails. While null, the form sends nothing. */
+  formKey: string | null;
   /**
-   * The Cloudflare intake Worker (new-empty-repo/worker) once it's deployed,
-   * e.g. 'https://cameron-belcher-intake.<account>.workers.dev'. With it, forms
-   * go straight into the request queue and onboarding can take photo uploads.
+   * The Cloudflare intake Worker (new-empty-repo/worker), only on the builder's own site.
+   * With it, forms go into the request queue and onboarding can take photo uploads. Null for clients.
    */
-  intakeUrl: 'https://cameron-belcher-intake.neteree.workers.dev' as string | null,
-  /** Shown on the page only when set. */
-  email: null as string | null,
+  intakeUrl: string | null;
+  /** The live address, e.g. 'https://example.co.nz', once known. */
+  url: string | null;
   /**
-   * Web3Forms access key for the contact form (web3forms.com). Enquiries go
-   * to the email address the key was created with. It's safe to publish.
-   * While null, the form says it isn't connected and sends nothing.
+   * Optional notice across the top of every page, e.g. 'Closed 24 December to 5 January'.
+   * It stops showing after `until` (YYYY-MM-DD, NZ time), or never if that's blank. Blank text hides it.
    */
-  formKey: 'f508dcc9-6877-487b-b5fd-63604d81d547' as string | null,
-  currency: 'NZD',
-  /** Every site starts here. */
-  base: {
-    name: 'Your website',
-    price: 150,
-    summary: 'A polished one-page site that tells people who you are and how to reach you.',
-    features: [
-      'One-page custom design',
-      'Enquiry form',
-      'Google Business Profile and local search basics',
-      'Launched on your own domain',
-      'Free hosting set up in your name',
-    ],
-  },
-  /** Optional extras, added at launch or any time later. */
-  addons: [
-    { name: 'Extra page', price: 40, detail: 'About, services, gallery, or anything else. Priced per page.' },
-    { name: 'Menu or product list', price: 60, detail: 'Your menu, services or products with prices.' },
-    { name: 'Booking or quote form', price: 60, detail: 'Customers send a booking or quote request straight to you.' },
-    { name: 'News you edit yourself', price: 80, detail: 'Post news, specials or updates from a simple editor.' },
-    { name: 'Online orders', price: 350, detail: 'Orders, pre-orders or payments through Stripe, set up in your name.' },
-  ],
-  /** Pay-per-request changes after launch. */
-  changes: [
-    { name: 'Small change', price: 20, detail: 'Text, photos, prices, opening hours or a menu update.' },
-    { name: 'Bigger job', price: null, detail: 'A redesign or something not listed above. Quoted up front.' },
-  ],
-};
+  notice: { text: string; until: string };
+  /**
+   * The order of the home page sections after the hero: 'gallery', 'news', 'enquire' and any
+   * module names (e.g. 'prices'). Sections left out follow in their usual order. Empty = usual order.
+   */
+  sections: string[];
+  /** Shows the "this is a demo" footer note. False for a real client. */
+  demo: boolean;
+}
+
+export const site: Site = data;

@@ -110,7 +110,7 @@
   .name input {
     width: 1.2rem;
     height: 1.2rem;
-    accent-color: var(--green);
+    accent-color: var(--accent);
   }
   select {
     width: 100%;
@@ -125,11 +125,11 @@
     border-color: var(--error);
   }
   .to {
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .closed {
     grid-column: 2 / -1;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .error {
     margin: 0;

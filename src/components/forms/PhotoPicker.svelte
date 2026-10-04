@@ -177,7 +177,7 @@
   .main input {
     width: 1.1rem;
     height: 1.1rem;
-    accent-color: var(--green);
+    accent-color: var(--accent);
   }
   img {
     width: 4rem;
@@ -203,7 +203,7 @@
   }
   .optional {
     font-weight: 400;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .name {
     min-width: 0;
