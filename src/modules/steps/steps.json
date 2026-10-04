@@ -1,0 +1,25 @@
+{
+  "section": {
+    "note": "How it works",
+    "title": "From first chat to live site",
+    "nav": "How it works"
+  },
+  "steps": [
+    {
+      "title": "A quick chat",
+      "text": "A free 20-minute call about your business and what you want the site to do."
+    },
+    {
+      "title": "Design and build",
+      "text": "I design and build your site, and you see a working preview to give feedback on."
+    },
+    {
+      "title": "Launch",
+      "text": "Once you’re happy, it goes live on your domain, with your Google profile connected."
+    },
+    {
+      "title": "Changes when you need them",
+      "text": "Send me a request whenever something changes. I tell you the price, then do it."
+    }
+  ]
+}

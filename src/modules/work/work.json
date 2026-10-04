@@ -1,0 +1,81 @@
+{
+  "section": {
+    "note": "Work",
+    "title": "Recent projects",
+    "intro": "Demo sites and a game, showing the range of what I build. Every business gets its own look, not a template with the colours swapped.",
+    "nav": "Work",
+    "frame": "browser"
+  },
+  "items": [
+    {
+      "title": "Lantern Market",
+      "kind": "Browser game",
+      "photo": {
+        "file": "lantern.jpg",
+        "alt": "A night-market puzzle game with a hex board of numbered jewel tiles, patrons' order tickets and a stall market"
+      },
+      "text": "A full puzzle game built on the same setup as the business sites: one look, one set of parts, the same checks.",
+      "demo": true
+    },
+    {
+      "title": "Paper Boat Café",
+      "kind": "Café",
+      "photo": {
+        "file": "cafe.jpg",
+        "alt": "Café website in warm retro orange and brown with a coffee cup illustration and menu highlights"
+      },
+      "text": "Opening hours up front, menu favourites, and ordering ahead for pickup.",
+      "demo": true
+    },
+    {
+      "title": "Tideline Plumbing",
+      "kind": "Plumber",
+      "photo": {
+        "file": "plumber.jpg",
+        "alt": "Bold yellow and black plumbing website with a pipe illustration and a big phone number"
+      },
+      "text": "Built to get the phone ringing: emergency call-outs, fixed quotes and trust points.",
+      "demo": true
+    },
+    {
+      "title": "Kingfisher Barbers",
+      "kind": "Barber",
+      "photo": {
+        "file": "barber.jpg",
+        "alt": "Dark barbershop website with gold lettering, a price list and a barber pole"
+      },
+      "text": "A price list at a glance, opening hours and online booking.",
+      "demo": true
+    },
+    {
+      "title": "Clearwater Physio",
+      "kind": "Physiotherapy clinic",
+      "photo": {
+        "file": "physio.jpg",
+        "alt": "Calm sage-green physio website with an appointment booking panel"
+      },
+      "text": "A calm, trustworthy feel with appointment booking right on the home page.",
+      "demo": true
+    },
+    {
+      "title": "Early Crust",
+      "kind": "Bakery",
+      "photo": {
+        "file": "bakery.jpg",
+        "alt": "Bakery website in a blue and yellow print style with a weekend pre-order"
+      },
+      "text": "Weekend pre-orders with pickup times, sold-out items and a cake enquiry form.",
+      "demo": true
+    },
+    {
+      "title": "Stem & Loam",
+      "kind": "Florist",
+      "photo": {
+        "file": "florist-botanical.jpg",
+        "alt": "Florist website with a hand-drawn bouquet, script lettering and blush paper texture"
+      },
+      "text": "A romantic, hand-drawn look with a weekly flower list and a seasonal guide.",
+      "demo": true
+    }
+  ]
+}

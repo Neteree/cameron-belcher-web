@@ -6,11 +6,11 @@
   // with them come from the link, e.g. onboarding.html?modules=food (add
   // &preorder=1 for ordering ahead for pickup), or ?modules=booking&quote=1.
   import { onMount } from 'svelte';
-  import { site } from '../site.config';
-  import { themes, modules as knownModules } from '../data/themes';
-  import { send, canUpload } from '../lib/send';
-  import PhotoPicker from './PhotoPicker.svelte';
-  import HoursPicker from './HoursPicker.svelte';
+  import { site } from '../../site.config';
+  import { looks as themes, offeredModules as knownModules } from '../../lib/catalogue';
+  import { send, canUpload } from '../../lib/send';
+  import PhotoPicker from '../../components/forms/PhotoPicker.svelte';
+  import HoursPicker from '../../components/forms/HoursPicker.svelte';
 
   let name = $state('');
   let suburb = $state('');
@@ -275,9 +275,9 @@
       <legend class="visually-hidden">Your look</legend>
       <div class="themes">
         {#each themes as option (option.id)}
-          <label class="theme theme-{option.id}" class:chosen={theme === option.id}>
+          <label class="theme" class:chosen={theme === option.id}>
             <input type="radio" name="theme" value={option.id} bind:group={theme} />
-            <span class="swatches" aria-hidden="true"><span></span><span></span><span></span></span>
+            <svg class="swatches" viewBox="0 0 66 20" aria-hidden="true">{#each option.swatches as colour, k (k)}<rect x={k * 23} width="20" height="20" rx="10" fill={colour} stroke="currentColor" stroke-opacity="0.3" />{/each}</svg>
             <span class="theme-name">{option.name}</span>
             <span class="theme-text">{option.text}</span>
           </label>
@@ -378,12 +378,12 @@
   }
   .optional {
     font-weight: 400;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .hint {
     margin: 0;
     font-size: 0.92rem;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   input:not([type='radio']):not([type='checkbox']),
   textarea {
@@ -418,11 +418,11 @@
     font-weight: 400;
   }
   .theme.chosen {
-    border-color: var(--green);
-    box-shadow: 0 0 0 2px var(--green);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent);
   }
   .theme:has(input:focus-visible) {
-    outline: 3px solid var(--gold);
+    outline: 3px solid var(--highlight);
     outline-offset: 3px;
   }
   .theme input {
@@ -431,40 +431,18 @@
     width: 1px;
     height: 1px;
   }
+  /* Each look's paper, accent and highlight colours (from src/themes.ts). */
   .swatches {
-    display: flex;
-    gap: 0.3rem;
-  }
-  .swatches span {
-    width: 1.6rem;
+    width: 5.3rem;
     height: 1.6rem;
-    border-radius: 50%;
-    border: 1px solid var(--rule);
   }
-  /* Each preset's paper, accent and highlight colours, and a hint of its heading font. */
-  .theme-bold .swatches span:nth-child(1) { background: #f7f6f2; }
-  .theme-bold .swatches span:nth-child(2) { background: #2350c8; }
-  .theme-bold .swatches span:nth-child(3) { background: #f4c430; }
-  .theme-bold .theme-name { font-family: 'Arial Black', system-ui, sans-serif; }
-  .theme-classic .swatches span:nth-child(1) { background: #f6f3ec; }
-  .theme-classic .swatches span:nth-child(2) { background: #1e5a3c; }
-  .theme-classic .swatches span:nth-child(3) { background: #d9a441; }
-  .theme-classic .theme-name { font-family: Georgia, serif; }
-  .theme-calm .swatches span:nth-child(1) { background: #f4f8f8; }
-  .theme-calm .swatches span:nth-child(2) { background: #0d737a; }
-  .theme-calm .swatches span:nth-child(3) { background: #ffd2b8; }
-  .theme-calm .theme-name { font-family: 'Segoe UI', system-ui, sans-serif; }
-  .theme-warm .swatches span:nth-child(1) { background: #fbf5ee; }
-  .theme-warm .swatches span:nth-child(2) { background: #a8422a; }
-  .theme-warm .swatches span:nth-child(3) { background: #f2c14e; }
-  .theme-warm .theme-name { font-family: Georgia, serif; }
   .theme-name {
     font-size: 1.25rem;
     font-weight: 700;
   }
   .theme-text {
     font-size: 0.92rem;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .progress {
     display: grid;
@@ -476,7 +454,7 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--green);
+    color: var(--accent);
   }
   .step-title {
     margin: 0;
@@ -494,7 +472,7 @@
   .fill {
     display: block;
     height: 100%;
-    background: var(--green);
+    background: var(--accent);
     transition: width 0.25s ease;
   }
   .fill-1 { width: 20%; }
@@ -530,7 +508,7 @@
   .note {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .sent {
     display: grid;

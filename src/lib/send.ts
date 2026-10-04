@@ -1,8 +1,9 @@
-// Sends a form. Once `intakeUrl` is set (the Cloudflare intake Worker), the
-// answers and any photos go there, into the request queue, and Web3Forms just
-// emails Cameron a heads-up. Until then everything goes by Web3Forms email as
-// before, with the answers attached as a ---…-JSON--- block that the queue
-// scripts can read. Photos can only go through the intake.
+// Sends the site's forms. On a client's site (`intakeUrl` null) Web3Forms
+// emails them to the address behind `site.formKey`, with any structured
+// answers attached as a ---…-JSON--- block the queue scripts can read. On the
+// builder's own site (`intakeUrl` set: the Cloudflare intake Worker) the
+// answers and any photos go into the request queue instead, and Web3Forms
+// just emails a heads-up. Photos can only go through the intake.
 import { site } from '../site.config';
 
 export interface Submission {
@@ -66,3 +67,14 @@ export async function send(submission: Submission): Promise<void> {
 
 /** Whether photos can be uploaded (only through the intake). */
 export const canUpload = Boolean(site.intakeUrl);
+
+/** A simple email form (enquiries, bookings): sends its fields as they are. True if it was sent. */
+export async function sendForm(subject: string, fields: Record<string, string | boolean>): Promise<boolean> {
+  const { botcheck, ...answers } = fields;
+  try {
+    await send({ kind: 'contact', subject, fields: answers as Record<string, string>, payload: answers, botcheck: Boolean(botcheck) });
+    return true;
+  } catch {
+    return false;
+  }
+}

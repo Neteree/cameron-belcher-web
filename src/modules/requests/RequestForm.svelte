@@ -3,12 +3,12 @@
   // other forms, as changes in the shape the starter's scripts/apply-changes.js
   // takes (new photos go to the intake and point at their upload by number). Nothing happens until the client confirms
   // from their saved email address and Cameron approves the price.
-  import { site } from '../site.config';
-  import { send, canUpload } from '../lib/send';
-  import { themes } from '../data/themes';
-  import PhotoPicker, { type ExistingPhoto } from './PhotoPicker.svelte';
-  import HoursPicker from './HoursPicker.svelte';
-  import PriceFields, { priceChanges, priceProblem } from './PriceFields.svelte';
+  import { site } from '../../site.config';
+  import { send, canUpload } from '../../lib/send';
+  import { looks as themes } from '../../lib/catalogue';
+  import PhotoPicker, { type ExistingPhoto } from '../../components/forms/PhotoPicker.svelte';
+  import HoursPicker from '../../components/forms/HoursPicker.svelte';
+  import PriceFields, { priceChanges, priceProblem } from '../../components/forms/PriceFields.svelte';
 
   type Kind =
     | 'text' | 'hours' | 'contact' | 'news' | 'photos' | 'theme'
@@ -610,12 +610,12 @@
   }
   .optional {
     font-weight: 400;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .hint {
     margin: 0;
     font-size: 0.92rem;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   input:not([type='radio']):not([type='checkbox']),
   select,
@@ -682,7 +682,7 @@
   .note {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--soft);
+    color: var(--ink-soft);
   }
   .sent {
     display: grid;

@@ -1,5 +1,6 @@
 {
   "version": "0.2",
   "language": "en-GB",
-  "words": ["Belcher", "Auckland", "Squarespace"]
+  "dictionaryDefinitions": [{ "name": "site-words", "path": "./cspell-words.txt", "addWords": true }],
+  "dictionaries": ["site-words"]
 }
