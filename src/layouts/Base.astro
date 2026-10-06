@@ -125,7 +125,9 @@ const business = {
         </nav>
       </header>
       <slot />
+      {(site.footer || site.demo) && (
       <footer class="footer">
+        {site.footer && (
         <div class="footer-main">
           <p class="sign">{site.name}</p>
           {(phoneLink || site.address || socialLinks.length > 0) && (
@@ -136,8 +138,10 @@ const business = {
             </ul>
           )}
         </div>
+        )}
         {site.demo && <p class="demo">A demo site. Nothing here is real or for sale.</p>}
       </footer>
+      )}
     </div>
     <script>
       import '../lib/carousel';
