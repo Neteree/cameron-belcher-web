@@ -6,7 +6,8 @@
     "intro": "One simple site to start, with extras you can add now or later. After launch, you only pay for the changes you ask for. Prices in NZD.",
     "footnote": "Money tight right now? Get in touch anyway. We can split the cost into smaller payments or start with the basics and add to it later.",
     "askText": "Quoted",
-    "nav": "Pricing"
+    "nav": "Pricing",
+    "layout": "cards"
   },
   "items": [
     {

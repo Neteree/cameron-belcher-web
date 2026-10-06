@@ -4,6 +4,7 @@
 // set demoPrices to false.
 import data from './prices.json';
 import { moneyFor } from '../../lib/money';
+import type { Layout } from './shown';
 
 export interface Size {
   /** e.g. 'Small'. */
@@ -34,7 +35,8 @@ interface Prices {
   demoPrices: boolean;
   /** Wording for the section on the home page; `footnote` goes under the list, e.g. 'Prices include GST.' */
   /** `askText` shows for items without a price ('Ask us', 'Quoted'); `nav` is the menu label. */
-  section: { note: string; title: string; intro: string; footnote: string; askText: string; nav: string };
+  /** `layout`: 'cards' (groups of cards), 'carousel' (one row that swipes sideways), 'tabs' (a tab per group) or 'rows' (a big photo beside each group). */
+  section: { note: string; title: string; intro: string; footnote: string; askText: string; layout?: Layout; nav: string };
   items: PriceItem[];
 }
 
@@ -46,9 +48,12 @@ export const items = prices.items.filter((item) => !item.unavailable);
 // One style for the whole list (see lib/money.ts).
 const money = moneyFor(items.flatMap((item) => (item.sizes?.length ? item.sizes.map((size) => size.price) : item.price !== undefined ? [item.price] : [])));
 
-/** The price as shown: '$65', 'From $120', 'Small $45 · Large $90' or 'Ask us' (section.askText). */
+/** What items without a price say, e.g. 'Ask us' or 'Quoted'. */
+export const askText = section.askText || 'Ask us';
+
+/** The price as shown: '$65', 'From $120', 'Small $45 · Large $90', or '' when there is none (see askText). */
 export function priceText(item: PriceItem): string {
   if (item.sizes?.length) return item.sizes.map((size) => `${size.label} ${money(size.price)}`).join(' · ');
-  if (item.price === undefined) return section.askText || 'Ask us';
+  if (item.price === undefined) return '';
   return `${item.from ? 'From ' : ''}${money(item.price)}`;
 }
