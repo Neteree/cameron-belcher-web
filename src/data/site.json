@@ -58,5 +58,7 @@
     "until": ""
   },
   "markColours": [],
-  "galleryLayout": "grid"
+  "galleryLayout": "grid",
+  "credit": null,
+  "footer": true
 }
