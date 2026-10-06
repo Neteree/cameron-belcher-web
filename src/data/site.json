@@ -60,5 +60,6 @@
   "markColours": [],
   "galleryLayout": "grid",
   "credit": null,
-  "footer": true
+  "footer": true,
+  "email": ""
 }
