@@ -61,5 +61,6 @@
   "galleryLayout": "grid",
   "credit": null,
   "footer": true,
-  "email": ""
+  "email": "",
+  "mailUrl": null
 }
