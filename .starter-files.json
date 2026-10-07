@@ -21,6 +21,7 @@
   "scripts/relative-paths.js",
   "scripts/share-images.js",
   "scripts/site_agent.py",
+  "src/components/BuyButton.svelte",
   "src/components/Carousel.svelte",
   "src/components/EnquiryForm.svelte",
   "src/components/Gallery.svelte",
