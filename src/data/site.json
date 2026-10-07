@@ -35,7 +35,8 @@
     "link": {
       "label": "Get started",
       "href": "start.html"
-    }
+    },
+    "privacy": "We only use your details to reply to you."
   },
   "theme": "studio",
   "url": "https://cameron-belcher-web.pages.dev",
